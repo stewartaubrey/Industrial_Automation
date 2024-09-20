@@ -1,4 +1,12 @@
-#User Interface GUI
+"""
+User Interface GUI
+This code generates the user interface and provides
+basic functionality such as:
+Send to remote interface (ESP32)
+Receive file listing from remote interface
+Commands to serially transmit selected files to CNC machine connected to remote interface.
+"""
+
 
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
