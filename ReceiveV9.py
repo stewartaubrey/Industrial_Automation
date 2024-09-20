@@ -1,4 +1,5 @@
-# This program runs on a ESP32 connected via serial link to the CNC machine
+""" This program runs on a ESP32 connected
+via serial link to the CNC machine"""
 
 import network
 import socket
