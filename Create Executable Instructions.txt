@@ -1,6 +1,6 @@
 Steps to Create an Executable with PyInstaller
 
-1. Install PyInstaller
+1. Install PyInstaller - Done for home computer
    Open your command prompt and install PyInstaller using pip:
    pip install pyinstaller
 
