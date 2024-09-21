@@ -11,11 +11,11 @@ Commands to serially transmit selected files to CNC machine connected to remote 
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import socket
-import subprocess
+#import subprocess
 import os
 
 # Constants
-HOST = '192.168.1.118'
+HOST = '192.168.1.120'
 PORT = 8080
 
 def show_message():
@@ -142,15 +142,15 @@ def delete_selected_file():
 
 # Create the main window
 root = tk.Tk()
-root.title("Stewart Machine - Industrial Automation Division 2024")
+root.title("Stewart Machine - 2024")
 
 # Create a blue banner
 banner = tk.Frame(root, bg="blue", height=50)
 banner.pack(fill="x")
 
-banner_label1 = tk.Label(banner, text="Stewart Machine", bg="blue", fg="white", font=("Helvetica", 16))
+banner_label1 = tk.Label(banner, text="Stewart Machine", bg="blue", fg="white", font=("Helvetica", 24))
 banner_label1.pack()
-banner_label2 = tk.Label(banner, text="Industrial Automation Division", bg="blue", fg="white", font=("Helvetica", 12))
+banner_label2 = tk.Label(banner, text="Industrial Automation Division", bg="blue", fg="white", font=("Courier", 16))
 banner_label2.pack()
 
 # Create a menu bar
@@ -172,11 +172,11 @@ edit_menu.add_command(label="Paste", command=show_message)
 menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
 # Add the menu bar to the window
-root.config(menu=menu_bar)
+# root.config(menu=menu_bar)
 
 # Add buttons to the window
 receive_button = tk.Button(root, text="Download from ESP32", command=run_receiver)
-receive_button.pack(pady=10)
+receive_button.pack(padx=100,pady=10)
 
 send_button = tk.Button(root, text="Upload New File to ESP32", command=select_and_send_file)
 send_button.pack(pady=10)
