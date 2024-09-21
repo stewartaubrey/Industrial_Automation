@@ -1,7 +1,7 @@
 """ This program runs on a ESP32 connected
 via serial link to the CNC machine
 
-This is ReceiveV10.py
+This is ReceiveV11.py
 
 """
 
@@ -11,22 +11,31 @@ import time
 from machine import UART, reset 
 import uos
 
-"""
-This function would hang waiting on an ip address
-The newer version below works a little better but still hangs
-
 def connect_wifi(ssid, password):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
+    
+    # Set static IP address
+    ip = '192.168.1.120'
+    subnet = '255.255.255.0'
+    gateway = '192.168.1.1'
+    dns = '8.8.8.8'
+    wlan.ifconfig((ip, subnet, gateway, dns))
     wlan.connect(ssid, password)
     
+    timeout = 30  # Timeout after 30 seconds
+    start_time = time.time()
+    
     while not wlan.isconnected():
+        if time.time() - start_time > timeout:
+            print('Failed to connect to network: Timeout')
+            return False
         print('Connecting to network...')
         time.sleep(1)
     
     print('Network connected!!!')
     print('IP address:', wlan.ifconfig()[0])
-"""
+    return True
 def connect_wifi(ssid, password):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)

@@ -1,5 +1,9 @@
 """ This program runs on a ESP32 connected
-via serial link to the CNC machine"""
+via serial link to the CNC machine
+
+This is ReceiveV10.py
+
+"""
 
 import network
 import socket
@@ -48,7 +52,7 @@ def start_server():
     s = socket.socket()
     s.bind(addr)
     s.listen(1)
-    #s.settimeout(30)  # Increase the timeout period to 30 seconds
+    s.settimeout(30)  # Increase the timeout period to 30 seconds
     print('Listening on', addr)
     
     while True:
