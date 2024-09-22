@@ -11,6 +11,7 @@ Commands to serially transmit selected files to CNC machine connected to remote 
 
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+from PIL import Image, ImageTk
 import socket
 #import subprocess
 import os
@@ -153,6 +154,14 @@ banner_label1 = tk.Label(banner, text="Stewart Machine", bg="blue", fg="white", 
 banner_label1.pack()
 banner_label2 = tk.Label(banner, text="Industrial Automation Division", bg="blue", fg="white", font=("Courier", 16))
 banner_label2.pack()
+
+# Load the image using PIL
+pil_image = Image.open("C:/Users/stewa/Documents/StewartMachine/Industrial Automation/SMLogo.png")
+image = ImageTk.PhotoImage(pil_image)
+
+# Create a label to display the image
+image_label = tk.Label(root, image=image)
+image_label.pack()
 
 # Create a menu bar
 menu_bar = tk.Menu(root)
