@@ -1,142 +1,211 @@
-import network
+"""
+User Interface GUI
+This code generates the user interface and provides
+basic functionality such as:
+Send to remote interface (ESP32)
+Receive file listing from remote interface
+Commands to serially transmit selected files to CNC machine connected to remote interface.
+"""
+
+
+import tkinter as tk
+from tkinter import filedialog, messagebox, ttk
 import socket
-import time
-from machine import UART, reset
-import uos
+#import subprocess
+import os
 
-def connect_wifi(ssid, password):
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-    wlan.connect(ssid, password)
-    while not wlan.isconnected():
-        print('Connecting to network...')
-        time.sleep(1)
-    print('Network connected!!!')
-    ip_address = wlan.ifconfig()[0]
-    print('IP address:', ip_address)
-    with open('ip_address.txt', 'w') as f:
-        f.write(ip_address)
-    return ip_address
+# Constants
+HOST = '192.168.1.120'
+PORT = 8080
 
-def start_server():
-    addr = socket.getaddrinfo('0.0.0.0', 8080)[0][-1]
-    s = socket.socket()
-    s.bind(addr)
-    s.listen(1)
-    s.settimeout(30)  # Increase the timeout period to 30 seconds
-    print('Listening on', addr)
-    while True:
+def show_message():
+    messagebox.showinfo("Info", "This is a menu item")
+
+def run_receiver():
+    file_name = file_combobox.get()
+    if file_name:
+        save_path = filedialog.asksaveasfilename(defaultextension=".txt", initialfile=file_name)
+        if save_path:
+            receive_file(file_name, save_path)
+    else:
+        print("No file selected")
+
+def receive_file(file_name, save_path):
+    try:
+        s = socket.socket()
+        s.connect((HOST, PORT))
+        s.sendall(f'RECEIVE_FILE {file_name}'.encode())
+        
+        with open(save_path, 'wb') as f:
+            while True:
+                data = s.recv(1024)
+                if not data:
+                    break
+                f.write(data)
+        s.close()
+        print(f'File {file_name} received and saved to {save_path}')
+    except socket.error as e:
+        print(f"Socket error: {e}")
+
+def send_file(file_path, host, port):
+    file_name = os.path.basename(file_path)
+    with open(file_path, 'rb') as f:
+        data = f.read()
+    
+    try:
+        s = socket.socket()
+        s.connect((host, port))
+        s.sendall(file_name.encode() + b'\n' + data)
+        s.close()
+        print('File sent')
+        update_file_list()  # Refresh the file list after sending a file
+    except socket.error as e:
+        print(f"Socket error: {e}")
+
+def select_and_send_file():
+    file_path = filedialog.askopenfilename(title="Select a file to send")
+    if file_path:
+        send_file(file_path, HOST, PORT)
+    else:
+        print("No file selected")
+
+def clear_files_on_esp32():
+    try:
+        s = socket.socket()
+        s.connect((HOST, PORT))
+        s.sendall(b'CLEAR_FILES')
+        s.close()
+        print('Clear files command sent')
+        update_file_list()  # Refresh the file list after clearing files
+    except socket.error as e:
+        print(f"Socket error: {e}")
+
+def list_files_on_esp32():
+    try:
+        s = socket.socket()
+        s.connect((HOST, PORT))
+        s.sendall(b'LIST_FILES')
+        data = s.recv(4096).decode()
+        s.close()
+        print('Files on ESP32:')
+        print(data)
+        return data.split('\n')
+    except socket.error as e:
+        print(f"Socket error: {e}")
+        return []
+
+def send_reboot_command():
+    try:
+        s = socket.socket()
+        s.connect((HOST, PORT))
+        s.sendall(b'REBOOT')
+        s.close()
+        print('Reboot command sent')
+    except socket.error as e:
+        print(f"Socket error: {e}")
+
+def update_file_list():
+    files = list_files_on_esp32()
+    file_combobox['values'] = files
+    if files:
+        file_combobox.current(0)
+
+def send_selected_file():
+    file_name = file_combobox.get()
+    if file_name:
         try:
-            cl, addr = s.accept()
-            print('Client connected from', addr)
-            data = cl.recv(1024)
-            if data == b'CLEAR_FILES':
-                clear_files()
-            elif data == b'LIST_FILES':
-                list_files(cl)
-            elif data.startswith(b'SEND_FILE'):
-                file_name = data[len('SEND_FILE '):].decode()
-                send_to_serial(file_name)
-            elif data.startswith(b'DELETE_FILE'):
-                file_name = data[len('DELETE_FILE '):].decode()
-                delete_file(file_name)
-            elif data.startswith(b'RECEIVE_FILE'):
-                file_name = data[len('RECEIVE_FILE '):].decode()
-                send_file_to_client(cl, file_name)
-            elif data == b'REBOOT':
-                cl.close()
-                print('Reboot command received')
-                reset()  # Reboot the ESP32
-            else:
-                file_name, file_data = data.split(b'\n', 1)
-                file_name = file_name.decode()
-                file_path = file_name
-                with open(file_path, 'wb') as f:
-                    f.write(file_data)
-                    while True:
-                        data = cl.recv(1024)
-                        if not data:
-                            break
-                        f.write(data)
-                cl.close()
-                print(f'File {file_name} received and saved to {file_path}')
-        except OSError as e:
-            if e.args[0] == 116:  # ETIMEDOUT error code
-                print('Socket timeout, no client connected')
-            else:
-                print(f"Error: {e}")
+            s = socket.socket()
+            s.connect((HOST, PORT))
+            s.sendall(f'SEND_FILE {file_name}'.encode())
+            s.close()
+            print(f'Send file command for {file_name} sent')
+            update_file_list()  # Refresh the file list after sending a file
+        except socket.error as e:
+            print(f"Socket error: {e}")
+    else:
+        print("No file selected")
 
-def send_to_serial(file_name):
-    uart = UART(1, baudrate=115200, tx=17, rx=16)  # Adjust pins and baudrate as needed
-    try:
-        with open(file_name, 'rb') as f:
-            while True:
-                chunk = f.read(1024)
-                if not chunk:
-                    break
-                uart.write(chunk)
-        print(f'File {file_name} sent to serial device')
-    except OSError as e:
-        print(f"Error sending file {file_name}: {e}")
+def delete_selected_file():
+    file_name = file_combobox.get()
+    if file_name:
+        try:
+            s = socket.socket()
+            s.connect((HOST, PORT))
+            s.sendall(f'DELETE_FILE {file_name}'.encode())
+            s.close()
+            print(f'Delete file command for {file_name} sent')
+            update_file_list()  # Refresh the file list after deleting a file
+        except socket.error as e:
+            print(f"Socket error: {e}")
+    else:
+        print("No file selected")
 
-def delete_file(file_name):
-    try:
-        uos.remove(file_name)
-        print(f'File {file_name} deleted')
-    except OSError as e:
-        print(f"Error deleting file {file_name}: {e}")
+# Create the main window
+root = tk.Tk()
+root.title("Stewart Machine - 2024")
 
-def clear_files():
-    try:
-        for item in uos.listdir():
-            if uos.stat(item)[0] & 0x4000:  # Check if it's a directory
-                for file in uos.listdir(item):
-                    if not file.endswith('.py'):
-                        try:
-                            uos.remove(f"{item}/{file}")
-                            print(f"Removed file: {item}/{file}")
-                        except OSError as e:
-                            print(f"Error removing file {item}/{file}: {e}")
-                try:
-                    uos.rmdir(item)
-                    print(f"Removed directory: {item}")
-                except OSError as e:
-                    print(f"Error removing directory {item}: {e}")
-            elif not item.endswith('.py'):
-                try:
-                    uos.remove(item)
-                    print(f"Removed file: {item}")
-                except OSError as e:
-                    print(f"Error removing file {item}: {e}")
-        print('All non-Python files cleared')
-    except OSError as e:
-        print(f"Error: {e}")
+# Create a blue banner
+banner = tk.Frame(root, bg="blue", height=50)
+banner.pack(fill="x")
 
-def list_files(client):
-    files = []
-    for item in uos.listdir():
-        if uos.stat(item)[0] & 0x4000:  # Check if it's a directory
-            for file in uos.listdir(item):
-                files.append(f"{item}/{file}")
-        else:
-            files.append(item)
-    client.send('\n'.join(files).encode())
-    client.close()
-    print('File list sent')
+banner_label1 = tk.Label(banner, text="Stewart Machine", bg="blue", fg="white", font=("Helvetica", 24))
+banner_label1.pack()
+banner_label2 = tk.Label(banner, text="Industrial Automation Division", bg="blue", fg="white", font=("Courier", 16))
+banner_label2.pack()
 
-def send_file_to_client(client, file_name):
-    try:
-        with open(file_name, 'rb') as f:
-            while True:
-                chunk = f.read(1024)
-                if not chunk:
-                    break
-                client.send(chunk)
-        client.close()
-        print(f'File {file_name} sent to client')
-    except OSError as e:
-        print(f"Error sending file {file_name}: {e}")
+# Create a menu bar
+menu_bar = tk.Menu(root)
 
-# Connect to Wi-Fi with the specified credentials
-connect_wifi('StewartNet', 'trawet07')
-start_server()
+# Create a File menu
+file_menu = tk.Menu(menu_bar, tearoff=0)
+file_menu.add_command(label="Open", command=show_message)
+file_menu.add_command(label="Save", command=show_message)
+file_menu.add_separator()
+file_menu.add_command(label="Exit", command=root.quit)
+menu_bar.add_cascade(label="File", menu=file_menu)
+
+# Create an Edit menu
+edit_menu = tk.Menu(menu_bar, tearoff=0)
+edit_menu.add_command(label="Cut", command=show_message)
+edit_menu.add_command(label="Copy", command=show_message)
+edit_menu.add_command(label="Paste", command=show_message)
+menu_bar.add_cascade(label="Edit", menu=edit_menu)
+
+# Add the menu bar to the window
+# root.config(menu=menu_bar)
+
+# Add buttons to the window
+receive_button = tk.Button(root, text="Download from ESP32", command=run_receiver)
+receive_button.pack(padx=100,pady=10)
+
+send_button = tk.Button(root, text="Upload New File to ESP32", command=select_and_send_file)
+send_button.pack(pady=10)
+
+list_button = tk.Button(root, text="Refresh ESP32 File List", command=update_file_list)
+list_button.pack(pady=10)
+
+clear_button = tk.Button(root, text="Delete All Files", command=clear_files_on_esp32)
+clear_button.pack(pady=10)
+
+# Add a separator
+separator = ttk.Separator(root, orient='horizontal')
+separator.pack(fill='x', pady=10)
+
+send_selected_button = tk.Button(root, text="Send Selected File to CNC", command=send_selected_file)
+send_selected_button.pack(pady=10)
+
+delete_selected_button = tk.Button(root, text="Delete Selected File", command=delete_selected_file)
+delete_selected_button.pack(pady=10)
+
+# Add a combobox for selecting files
+file_combobox = ttk.Combobox(root)
+file_combobox.pack(pady=10)
+
+reboot_button = tk.Button(root, text="Restart ESP32", command=send_reboot_command)
+reboot_button.pack(pady=10)
+
+# Initial update of the file list
+update_file_list()
+
+# Run the application
+root.mainloop()
