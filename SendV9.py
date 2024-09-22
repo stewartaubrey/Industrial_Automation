@@ -7,9 +7,11 @@ Receive file listing from remote interface
 Commands to serially transmit selected files to CNC machine connected to remote interface.
 """
 
+
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import socket
+#import subprocess
 import os
 
 # Constants
@@ -17,11 +19,9 @@ HOST = '192.168.1.120'
 PORT = 8080
 
 def show_message():
-    """Display an informational message box."""
     messagebox.showinfo("Info", "This is a menu item")
 
 def run_receiver():
-    """Prompt user to select a file and save path, then receive the file from the remote interface."""
     file_name = file_combobox.get()
     if file_name:
         save_path = filedialog.asksaveasfilename(defaultextension=".txt", initialfile=file_name)
@@ -31,7 +31,6 @@ def run_receiver():
         print("No file selected")
 
 def receive_file(file_name, save_path):
-    """Receive a file from the remote interface and save it to the specified path."""
     try:
         s = socket.socket()
         s.connect((HOST, PORT))
