@@ -47,6 +47,7 @@ def request_serial_data():
         s.sendall(b'RECEIVE_SERIAL')
         s.close()
         print('Request to receive serial data sent')
+        update_file_list()  # Refresh the file list
     except socket.error as e:
         print(f"Socket error: {e}")
     
