@@ -110,16 +110,28 @@ def send_to_serial(file_name):
         print(f"Error sending file {file_name}: {e}")
 
 def receive_from_serial(file_name):
+    #time.sleep(5)
     uart = UART(1, baudrate=9600,tx=16, rx=17)  # Adjust pins and baudrate as needed
+    #print("just before try loop")
     try:
+        #print("inside try loop")
+        #print(file_name)
         with open(file_name, 'wb') as f:
             while True:
+                #print("inside True loop")
                 chunk = uart.read(1024)
+                #time.sleep(.1)
+                #print(chunk)
                 if chunk:
                     f.write(chunk)
-                    #if b'%' in chunk:
-                        #break
-        print(f'Data received from serial and saved to {file_name}')
+                    print(chunk)
+                    time.sleep(.1)
+                    if b'%' in chunk:
+                        break
+                #if not chunk:
+                    #print("No more serial data")
+                    #break
+        print(f'Data received from serial com1 and saved to {file_name}')
     except OSError as e:
         print(f"Error receiving data from serial: {e}")
 
