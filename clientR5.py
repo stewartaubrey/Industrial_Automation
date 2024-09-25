@@ -29,7 +29,27 @@ def run_receiver():
             receive_file(file_name, save_path)
     else:
         print("No file selected")
+    
+def send_reboot_command():
+    try:
+        s = socket.socket()
+        s.connect((HOST, PORT))
+        s.sendall(b'REBOOT')
+        s.close()
+        print('Reboot command sent')
+    except socket.error as e:
+        print(f"Socket error: {e}")
 
+def request_serial_data():
+    try:
+        s = socket.socket()
+        s.connect((HOST, PORT))
+        s.sendall(b'RECEIVE_SERIAL')
+        s.close()
+        print('Request to receive serial data sent')
+    except socket.error as e:
+        print(f"Socket error: {e}")
+    
 def receive_file(file_name, save_path):
     try:
         s = socket.socket()
@@ -166,8 +186,11 @@ image_label.grid(row=0, column=0, columnspan=2)
 send_button = tk.Button(root, text="Upload New File to ESP32", command=select_and_send_file)
 send_button.grid(row=1, column=0, padx=10, pady=10)
 
-receive_button = tk.Button(root, text="Receive File", command=run_receiver)
+receive_button = tk.Button(root, text="Receive Selected File", command=run_receiver)
 receive_button.grid(row=1, column=1, padx=10, pady=10)
+
+serial_button = tk.Button(root, text="Receive Serial Data from CNC", command=request_serial_data)
+serial_button.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
 delete_button = tk.Button(root, text="Delete Selected File", command=delete_selected_file)
 delete_button.grid(row=2, column=0, padx=10, pady=10)
