@@ -110,7 +110,9 @@ def list_files_on_esp32():
         #update_status(data)
         return data.split('\n')
     except socket.error as e:
-        update_status(f"Socket error: {e}")
+        #update_status(f"Socket error: {e}\n"+ "Server Device Not Found\n" + "Verify ESP32 Powered\nIf ESP32 was powered, wait 1m\nwhile it acquires IP Address from router\nand try again\n")
+        update_status(f"Socket error:\n"+ "Server Device Not Found\n" + "Verify ESP32 Powered\nIf ESP32 was powered, wait 1m\nwhile it acquires IP Address from router\nand try again\n")
+
         return []
 
 def send_selected_file():
