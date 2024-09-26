@@ -47,6 +47,7 @@ def request_serial_data():
         s.sendall(b'RECEIVE_SERIAL')
         s.close()
         print('Request to receive serial data sent')
+        update_file_list()  # Refresh the file list
     except socket.error as e:
         print(f"Socket error: {e}")
     
@@ -150,16 +151,6 @@ def delete_selected_file():
     else:
         print("No file selected")
 
-def send_close_connection_command():
-    try:
-        s = socket.socket()
-        s.connect((HOST, PORT))
-        s.sendall(b'CLOSE_CONNECTION')
-        s.close()
-        print('Close connection command sent')
-    except socket.error as e:
-        print(f"Socket error: {e}")
-        
 def send_reboot_command():
     try:
         s = socket.socket()
@@ -196,30 +187,28 @@ image_label.grid(row=0, column=0, columnspan=2)
 send_button = tk.Button(root, text="Upload New File to ESP32", command=select_and_send_file)
 send_button.grid(row=1, column=0, padx=10, pady=10)
 
-receive_button = tk.Button(root, text="Receive Selected File", command=run_receiver)
+receive_button = tk.Button(root, text="Receive Selected File from ESP32", command=run_receiver)
 receive_button.grid(row=1, column=1, padx=10, pady=10)
 
 serial_button = tk.Button(root, text="Receive Serial Data from CNC", command=request_serial_data)
-serial_button.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+serial_button.grid(row=2, column=0, padx=10, pady=10)
 
 delete_button = tk.Button(root, text="Delete Selected File", command=delete_selected_file)
-delete_button.grid(row=2, column=0, padx=10, pady=10)
+delete_button.grid(row=2, column=1, padx=10, pady=10)
 
 clear_button = tk.Button(root, text="Clear Files on ESP32", command=clear_files_on_esp32)
-clear_button.grid(row=2, column=1, padx=10, pady=10)
+clear_button.grid(row=3, column=0, padx=10, pady=10)
 
 send_selected_button = tk.Button(root, text="Send Selected File to CNC", command=send_selected_file)
-send_selected_button.grid(row=3, column=0, padx=10, pady=10)
+send_selected_button.grid(row=3, column=1, padx=10, pady=10)
 
 reboot_button = tk.Button(root, text="Restart ESP32", command=send_reboot_command)
-reboot_button.grid(row=3, column=1, padx=10, pady=10)
-
-close_connection_button = tk.Button(root, text="Close WiFi Connection", command=send_close_connection_command)
-close_connection_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
+reboot_button.grid(row=4, column=0, padx=10, pady=10)
 
 # Add a combobox for selecting files
 file_combobox = ttk.Combobox(root)
-file_combobox.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+file_combobox.grid(row=4, column=1, padx=10, pady=10)
+
 # Initial update of the file list
 update_file_list()
 
