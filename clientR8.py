@@ -76,7 +76,7 @@ def send_file(file_path, host, port):
         s.connect((host, port))
         s.sendall(file_name.encode() + b'\n' + data)
         s.close()
-        update_status('File sent')
+        update_status('File sent to ESP32: ' + file_name)
         update_file_list()  # Refresh the file list after sending a file
     except socket.error as e:
         update_status(f"Socket error: {e}")
@@ -94,7 +94,7 @@ def clear_files_on_esp32():
         s.connect((HOST, PORT))
         s.sendall(b'CLEAR_FILES')
         s.close()
-        update_status("Clear files command sent")
+        update_status("All files cleared on ESP32")
         update_file_list()  # Refresh the file list after clearing files
     except socket.error as e:
         update_status(f"Socket error: {e}")
@@ -121,7 +121,7 @@ def send_selected_file():
             s.connect((HOST, PORT))
             s.sendall(f'SEND_FILE {file_name}'.encode())
             s.close()
-            update_status(f'Send file command for {file_name} sent')
+            update_status(f'Send to CNC command for {file_name} sent')
             update_file_list()  # Refresh the file list after sending a file
         except socket.error as e:
             update_status(f"Socket error: {e}")
@@ -136,7 +136,7 @@ def delete_selected_file():
             s.connect((HOST, PORT))
             s.sendall(f'DELETE_FILE {file_name}'.encode())
             s.close()
-            update_status(f'Delete file command for {file_name} sent')
+            update_status(f'{file_name} Deleted from ESP32')
             update_file_list()  # Refresh the file list after deleting a file
         except socket.error as e:
             update_status(f"Socket error: {e}")
