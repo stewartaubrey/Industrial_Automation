@@ -162,16 +162,14 @@ root.title("Send_V9 GUI")
 # Load the image using PIL and scale it by half
 # since this image is hard coded to my home computer the program crashes
 # if I run it from another location, need to address
-pil_image = Image.open("C:/Users/stewa/Pictures/SMLogo.png")
+
+
+#pil_image = Image.open("C:/Users/stewa/Pictures/SMLogo.png")
+pil_image = Image.open("C:/Users/stewa/Documents/StewartMachine/Industrial Automation/SMLogo.png")
 width, height = pil_image.size
 scaled_image = pil_image.resize((width // 2, height // 2), Image.LANCZOS)
 image = ImageTk.PhotoImage(scaled_image)
 
-"""# Load the image using PIL and scale it by half
-pil_image = Image.open("C:/Users/stewa/Documents/StewartMachine/Industrial Automation/SMLogo.png")
-width, height = pil_image.size
-scaled_image = pil_image.resize((width // 2, height // 2), Image.ANTIALIAS)
-image = ImageTk.PhotoImage(scaled_image)"""
 
 # Create a label to display the image
 image_label = tk.Label(root, image=image)

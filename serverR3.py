@@ -4,6 +4,9 @@
     Next upgrade is setup messaging back to client:
     1. Send connection status and info
     2. Send message confirming command receipt
+
+Changed the send_to_serial function prepend the XON character to the file data before sending it to the CNC machine.
+
 """
 
 import network
@@ -112,6 +115,8 @@ def send_to_serial(file_name):
 
     try:
         with open(file_name, 'rb') as f:
+            # Prepend the XON character
+            uart.write(bytes([XON]))
             while True:
                 chunk = f.read(1024)
                 if not chunk:
