@@ -109,7 +109,7 @@ def start_server():
 
 def send_to_serial(file_name):
     uart = UART(1, baudrate=9600, tx=16, rx=17)  # Adjust pins and baudrate as needed
-    XON = 0x11
+    XON = 0x26
     XOFF = 0x13
     flow_control = True
 
