@@ -16,6 +16,7 @@ from machine import UART, reset
 import uos
 
 ssid='StewartNet'
+#ssid='stewartnet'
 password='trawet07'
 
 def send_status_message(client, message):
@@ -49,6 +50,7 @@ def connect_wifi(ssid, password):
 def start_server():
     addr = socket.getaddrinfo('0.0.0.0', 8080)[0][-1]
     s = socket.socket()
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Reuse the address
     s.bind(addr)
     s.listen(1)
     s.settimeout(30)  # Increase the timeout period to 30 seconds
