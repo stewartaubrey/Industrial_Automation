@@ -72,7 +72,7 @@ def start_server():
             elif data.startswith(b'DELETE_FILE'):
                 file_name = data[len('DELETE_FILE '):].decode()
                 delete_file(file_name)
-                send_status_message(cl, f'File {file_name} deleted from ESP32')
+                send_status_message(cl, f'File {file_name} deleteddd from ESP32')
             elif data.startswith(b'RECEIVE_FILE'):
                 file_name = data[len('RECEIVE_FILE '):].decode()
                 send_file_to_client(cl, file_name)
@@ -209,7 +209,7 @@ def list_files(client):
         else:
             files.append(item)
     client.send('\n'.join(files).encode())
-    client.close()
+    #client.close()
     print('File list sent')
 
 def send_file_to_client(client, file_name):
