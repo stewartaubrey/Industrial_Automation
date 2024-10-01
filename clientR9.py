@@ -179,10 +179,10 @@ root.title("Send_V9 GUI")
 # if I run it from another location, need to address
 
 
-#pil_image = Image.open("C:/Users/stewa/Pictures/SMLogo.png")
-pil_image = Image.open("C:/Users/stewa/Documents/StewartMachine/Industrial Automation/SMLogo.png")
+pil_image = Image.open("C:/Users/stewa/Pictures/SMLogo.png")
+#pil_image = Image.open("C:/Users/stewa/Documents/StewartMachine/Industrial Automation/SMLogo.png")
 width, height = pil_image.size
-scaled_image = pil_image.resize((width // 2, height // 2), Image.LANCZOS)
+scaled_image = pil_image.resize((width // 3, height // 3), Image.LANCZOS)
 image = ImageTk.PhotoImage(scaled_image)
 
 
