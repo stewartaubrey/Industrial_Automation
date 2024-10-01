@@ -28,16 +28,13 @@ def send_status_message(client, message):
 
 def connect_wifi(ssid, password):
     wlan = network.WLAN(network.STA_IF)
-    time.sleep(1)
     wlan.active(True)
-    time.sleep(1)
     # Set static IP address
     ip = '192.168.1.120'
     subnet = '255.255.255.0'
     gateway = '192.168.1.1'
     dns = '8.8.8.8'
     wlan.ifconfig((ip, subnet, gateway, dns))
-    time.sleep(1)
     wlan.connect(ssid, password)
     
     while not wlan.isconnected():
@@ -52,8 +49,7 @@ def start_server():
     s = socket.socket()
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Reuse the address
     s.bind(addr)
-    s.listen(1)
-    s.settimeout(30)  # Increase the timeout period to 30 seconds
+    #s.settimeout(30)  # Increase the timeout period to 30 seconds
     print('Listening on', addr)
     
     while True:
