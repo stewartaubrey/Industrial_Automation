@@ -148,6 +148,7 @@ def send_to_serial(file_name):
                                 flow_control = True
                         time.sleep(0.01)  # Small delay to prevent busy waiting
                     uart.write(bytes([byte]))
+            uart.write(bytes([XOFF]))
         print(f'File {file_name} sent to serial device')
     except OSError as e:
         print(f"Error sending file {file_name}: {e}")
