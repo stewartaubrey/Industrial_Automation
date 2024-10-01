@@ -21,7 +21,7 @@ password='trawet07'
 
 def send_status_message(client, message):
     try:
-        client.sendall(f'STATUS_MESSAGE {message}'.encode())
+        client.sendall(f'Server Msg: {message}'.encode())
     except OSError as e:
         print(f"Error sending status message: {e}")
 
@@ -39,10 +39,15 @@ def connect_wifi(ssid, password):
     
     while not wlan.isconnected():
         print('Connecting to network...')
+        #send_status_message(cl,'Connecting to network...')
         time.sleep(1)
     
     print('Network connected!')
     print('IP address:', wlan.ifconfig()[0])
+    #send_status_message(client,'Network conneted!')
+    #send_status_message(cl,'IP address' + wlan.ifconfig()[0])
+
+
     
 def start_server():
     addr = socket.getaddrinfo('0.0.0.0', 8080)[0][-1]
@@ -53,7 +58,6 @@ def start_server():
 
     #s.settimeout(30)  # Increase the timeout period to 30 seconds
     print('Listening on', addr)
-    
     while True:
         try:
             cl, addr = s.accept()
@@ -72,19 +76,20 @@ def start_server():
             elif data.startswith(b'DELETE_FILE'):
                 file_name = data[len('DELETE_FILE '):].decode()
                 delete_file(file_name)
-                send_status_message(cl, f'File {file_name} deleteddd from ESP32')
+                send_status_message(cl, f'File {file_name} deleted from ESP32')
             elif data.startswith(b'RECEIVE_FILE'):
                 file_name = data[len('RECEIVE_FILE '):].decode()
                 send_file_to_client(cl, file_name)
                 send_status_message(cl, f'File {file_name} sent to client')
             elif data == b'REBOOT':
-                send_status_message(cl, 'Reboot command received')
+                send_status_message(cl, 'Reboot command received, see you on the other side!')
                 cl.close()
                 print('Reboot command received')
+                time.sleep(1)
                 reset()  # Reboot the ESP32
             elif data == b'RECEIVE_SERIAL':
                 receive_from_serial('serial_data.txt')  # Save serial data to 'serial_data.txt'
-                send_status_message(cl, 'Serial data received and saved')
+                send_status_message(cl, 'Serial data received and saved as serial_data.txt')
             else:
                 file_name, file_data = data.split(b'\n', 1)
                 file_name = file_name.decode()

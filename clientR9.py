@@ -33,8 +33,10 @@ def send_reboot_command():
         s = socket.socket()
         s.connect((HOST, PORT))
         s.sendall(b'REBOOT')
-        s.close()
         update_status('Reboot command sent')
+        status = s.recv(1024).decode()  # Wait for status message
+        update_status(status) 
+        s.close()
     except socket.error as e:
         update_status(f"Socket error: {e}")
 
@@ -75,8 +77,10 @@ def send_file(file_path, host, port):
         s = socket.socket()
         s.connect((host, port))
         s.sendall(file_name.encode() + b'\n' + data)
-        s.close()
         update_status('File sent to ESP32: ' + file_name)
+        #status = s.recv(1024).decode()  # Wait for status message
+        #update_status(status)    
+        s.close()
         update_file_list()  # Refresh the file list after sending a file
     except socket.error as e:
         update_status(f"Socket error: {e}")
@@ -93,8 +97,10 @@ def clear_files_on_esp32():
         s = socket.socket()
         s.connect((HOST, PORT))
         s.sendall(b'CLEAR_FILES')
+        update_status("Command to files cleared on ESP32 sent")
+        status = s.recv(1024).decode()  # Wait for status message
         s.close()
-        update_status("All files cleared on ESP32")
+        update_status(status)
         update_file_list()  # Refresh the file list after clearing files
     except socket.error as e:
         update_status(f"Socket error: {e}")
@@ -122,8 +128,9 @@ def send_selected_file():
             s = socket.socket()
             s.connect((HOST, PORT))
             s.sendall(f'SEND_FILE {file_name}'.encode())
+            #status = s.recv(1024).decode()  # Wait for status message
             s.close()
-            update_status(f'Send to CNC command for {file_name} sent')
+            #update_status(status)
             update_file_list()  # Refresh the file list after sending a file
         except socket.error as e:
             update_status(f"Socket error: {e}")
@@ -137,13 +144,15 @@ def delete_selected_file():
             s = socket.socket()
             s.connect((HOST, PORT))
             s.sendall(f'DELETE_FILE {file_name}'.encode())
+            status = s.recv(1024).decode()  # Wait for status message
+            update_status(status)
             s.close()
-            update_status(f'{file_name} Deleted from ESP32')
             update_file_list()  # Refresh the file list after deleting a file
         except socket.error as e:
             update_status(f"Socket error: {e}")
     else:
         update_status("No file selected")
+
 def show_message():
     messagebox.showinfo("Info", "This is a menu item")
 
