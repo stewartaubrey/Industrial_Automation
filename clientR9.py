@@ -13,6 +13,7 @@ from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageTk
 import socket
 import os
+import time
 
 # Constants
 HOST = '192.168.1.120'
@@ -51,7 +52,7 @@ def request_serial_data():
     except socket.error as e:
         update_status(f"Socket error: {e}")
 
-def receive_file(file_name, save_path):
+def receive_file(file_name, save_path): # This function causes a selected file on ESP32 to be sent to the client
     try:
         s = socket.socket()
         s.connect((HOST, PORT))
@@ -63,8 +64,12 @@ def receive_file(file_name, save_path):
                 if not data:
                     break
                 f.write(data)
-        s.close()
+        
+        status = s.recv(1024).decode()  # Wait for status message
+        time.sleep(.1)
         update_status(f'File {file_name} received and saved to {save_path}')
+        update_status(status) 
+        s.close()
     except socket.error as e:
         update_status(f"Socket error: {e}")
 
@@ -121,16 +126,17 @@ def list_files_on_esp32():
 
         return []
 
-def send_selected_file():
+def send_selected_file(): #Command to send selected file to CNC machine
     file_name = file_combobox.get()
     if file_name:
         try:
             s = socket.socket()
             s.connect((HOST, PORT))
             s.sendall(f'SEND_FILE {file_name}'.encode())
-            #status = s.recv(1024).decode()  # Wait for status message
+            status = s.recv(1024).decode()  # Wait for status message
+            time.sleep(.1)
             s.close()
-            #update_status(status)
+            update_status(status)
             update_file_list()  # Refresh the file list after sending a file
         except socket.error as e:
             update_status(f"Socket error: {e}")

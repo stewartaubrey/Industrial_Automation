@@ -55,34 +55,44 @@ def start_server():
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Reuse the address
     s.bind(addr)
     s.listen(1)
-
+    #send_status_message(cl, "Connected!")
     #s.settimeout(30)  # Increase the timeout period to 30 seconds
     print('Listening on', addr)
     while True:
+        #cl, addr = s.accept()
+        time.sleep(.1)
+        #send_status_message(cl, "Connected!")
         try:
             cl, addr = s.accept()
-            print('Client connected from', addr)
+            print('Client connected from', addr)           
             data = cl.recv(1024)
-            if data == b'CLEAR_FILES':
+            if data == b'CLEAR_FILES': #clears all files on ESP32, confirmed
+                print("clearing files")
                 clear_files()
-                send_status_message(cl, 'All files cleared on ESP32')
-            elif data == b'LIST_FILES':
+                send_status_message(cl, 'All User files cleared on ESP32')
+            elif data == b'LIST_FILES': #Lists all files on CNC - used after every op to refresh client list
+                print("lists files")
                 list_files(cl)
                 send_status_message(cl, 'File list sent to client')
-            elif data.startswith(b'SEND_FILE'):
+            elif data.startswith(b'SEND_FILE'): #Sends selected file to CNC
+                print("Sending file to CNC serial port")
                 file_name = data[len('SEND_FILE '):].decode()
                 send_to_serial(file_name)
                 send_status_message(cl, f'File {file_name} sent to CNC')
-            elif data.startswith(b'DELETE_FILE'):
+            elif data.startswith(b'DELETE_FILE'): #Deletes file selected on client window
+                print("Deleted file: " + file_name)
                 file_name = data[len('DELETE_FILE '):].decode()
                 delete_file(file_name)
                 send_status_message(cl, f'File {file_name} deleted from ESP32')
-            elif data.startswith(b'RECEIVE_FILE'):
+
+            elif data.startswith(b'RECEIVE_FILE'): # I think this gets a serial file from CNC
+                print("Sending " + file_name + " to CNC")
                 file_name = data[len('RECEIVE_FILE '):].decode()
                 send_file_to_client(cl, file_name)
                 send_status_message(cl, f'File {file_name} sent to client')
+
             elif data == b'REBOOT':
-                send_status_message(cl, 'Reboot command received, see you on the other side!')
+                send_status_message(cl, 'Reboot command received, \n            see you on the other side!')
                 cl.close()
                 print('Reboot command received')
                 time.sleep(1)
@@ -90,7 +100,8 @@ def start_server():
             elif data == b'RECEIVE_SERIAL':
                 receive_from_serial('serial_data.txt')  # Save serial data to 'serial_data.txt'
                 send_status_message(cl, 'Serial data received and saved as serial_data.txt')
-            else:
+            else: # this section sends selected file to PC
+                print("else statement")
                 file_name, file_data = data.split(b'\n', 1)
                 file_name = file_name.decode()
                 
