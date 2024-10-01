@@ -49,6 +49,7 @@ def start_server():
     s = socket.socket()
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Reuse the address
     s.bind(addr)
+    s.listen(1)
     #s.settimeout(30)  # Increase the timeout period to 30 seconds
     print('Listening on', addr)
     
