@@ -126,7 +126,7 @@ def start_server():
 
 
 def send_to_serial(file_name): #no xon/xoff
-    uart = UART(1, baudrate=9600, tx=16, rx=17, bits=8, parity=None, stop=1)  # Adjust pins and baudrate as needed
+    uart = UART(1, baudrate=57600, tx=16, rx=17, bits=8, parity=None, stop=1)  # Adjust pins and baudrate as needed
 
     try:
         with open(file_name, 'rb') as f:
