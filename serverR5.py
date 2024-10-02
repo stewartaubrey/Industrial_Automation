@@ -133,6 +133,7 @@ def send_to_serial(file_name):
         with open(file_name, 'rb') as f:
             # Prepend the XON character
             uart.write(bytes([XON]))
+            time.sleep(2)
             while True:
                 chunk = f.read(1024)
                 if not chunk:
