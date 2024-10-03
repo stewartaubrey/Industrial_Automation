@@ -5,8 +5,6 @@
     1. Send connection status and info
     2. Send message confirming command receipt
 
-    
-
 Changed the send_to_serial function prepend the XON character to the file data before sending it to the CNC machine.
 
 """
@@ -126,7 +124,7 @@ def start_server():
 
 
 
-
+"""
 def send_to_serial(file_name): #no xon/xoff
     uart = UART(1, baudrate=9600, tx=16, rx=17, bits=8, parity=None, stop=1)  # Adjust pins and baudrate as needed
 
@@ -145,7 +143,7 @@ def send_to_serial(file_name): #no xon/xoff
 """
 def send_to_serial(file_name): #with xon/xoff
     uart = UART(1, baudrate=9600, tx=16, rx=17)  # Adjust pins and baudrate as needed
-    XON = 0x26
+    XON = 0x11
     XOFF = 0x13
     flow_control = True
 
@@ -170,7 +168,7 @@ def send_to_serial(file_name): #with xon/xoff
         print(f'File {file_name} sent to serial device')
     except OSError as e:
         print(f"Error sending file {file_name}: {e}")
-"""
+
 
 def receive_from_serial(file_name):
     #time.sleep(0)
