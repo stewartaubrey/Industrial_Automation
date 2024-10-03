@@ -5,6 +5,8 @@
     1. Send connection status and info
     2. Send message confirming command receipt
 
+    
+
 Changed the send_to_serial function prepend the XON character to the file data before sending it to the CNC machine.
 
 """
@@ -126,7 +128,7 @@ def start_server():
 
 
 def send_to_serial(file_name): #no xon/xoff
-    uart = UART(1, baudrate=57600, tx=16, rx=17, bits=8, parity=None, stop=1)  # Adjust pins and baudrate as needed
+    uart = UART(1, baudrate=9600, tx=16, rx=17, bits=8, parity=None, stop=1)  # Adjust pins and baudrate as needed
 
     try:
         with open(file_name, 'rb') as f:
