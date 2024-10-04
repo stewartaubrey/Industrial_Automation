@@ -1,2 +1,2 @@
-This branch abandoned.
-HTML server was copied to the html repository
+This branch contains the html server for the industrial automation project.
+HTML server was also copied to the html repository
