@@ -143,7 +143,7 @@ def send_to_serial(file_name): #no xon/xoff
 """
 def send_to_serial(file_name): #with xon/xoff
     uart = UART(1, baudrate=9600, tx=16, rx=17)  # Adjust pins and baudrate as needed
-    XON = 0x26
+    XON = 0x11
     XOFF = 0x13
     flow_control = True
 
@@ -177,11 +177,13 @@ def receive_from_serial(file_name):
     try:
         #print("inside try loop")
         #print(file_name)
+        count=1
         with open(file_name, 'wb') as f:
             while True:
-                #print("inside True loop")
+                count+=1
+                print("inside True loop",count)
                 chunk = uart.read(1024)
-                time.sleep(.5)
+                time.sleep(1)
                 print(chunk)
                 if chunk:
                     f.write(chunk)
