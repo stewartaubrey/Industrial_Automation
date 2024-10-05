@@ -126,13 +126,31 @@ def list_files_on_esp32():
 
         return []
 
-def send_selected_file(): #Command to send selected file to CNC machine
+def send_selected_file_serial(): #Command to send selected file to CNC machine without flow control
     file_name = file_combobox.get()
     if file_name:
         try:
             s = socket.socket()
             s.connect((HOST, PORT))
-            s.sendall(f'SEND_FILE {file_name}'.encode())
+            s.sendall(f'SEND_FILE_SERIAL {file_name}'.encode())
+            status = s.recv(1024).decode()  # Wait for status message
+            time.sleep(.1)
+            s.close()
+            update_status(status)
+            update_file_list()  # Refresh the file list after sending a file
+        except socket.error as e:
+            update_status(f"Socket error: {e}")
+    else:
+        update_status("No file selected")
+
+def send_selected_file_serialFC(): #Command to send selected file to CNC machine without flow control
+    file_name = file_combobox.get()
+    if file_name:
+        try:
+            s = socket.socket()
+            s.connect((HOST, PORT))
+            s.sendall(f'FC_SEND_FILE_SERIAL {file_name}'.encode())
+            print("debug message: " + file_name)
             status = s.recv(1024).decode()  # Wait for status message
             time.sleep(.1)
             s.close()
@@ -172,7 +190,7 @@ def update_file_list():
 
 # Create the main window
 root = tk.Tk()
-root.title("Send_V9 GUI")
+root.title("Graphic User Interface for Stewart Machine")
 
 # Load the image using PIL and scale it by half
 # since this image is hard coded to my home computer the program crashes
@@ -182,7 +200,7 @@ root.title("Send_V9 GUI")
 #pil_image = Image.open("C:/Users/stewa/Pictures/SMLogo.png")
 pil_image = Image.open("C:/Users/stewa/Documents/StewartMachine/Industrial Automation/SMLogo.png")
 width, height = pil_image.size
-scaled_image = pil_image.resize((width // 2, height // 2), Image.LANCZOS)
+scaled_image = pil_image.resize((width // 3, height // 3), Image.LANCZOS)
 image = ImageTk.PhotoImage(scaled_image)
 
 
@@ -206,19 +224,22 @@ delete_button.grid(row=2, column=1, padx=10, pady=10)
 clear_button = tk.Button(root, text="Clear Files on ESP32", command=clear_files_on_esp32)
 clear_button.grid(row=3, column=0, padx=10, pady=10)
 
-send_selected_button = tk.Button(root, text="Send Selected File to CNC", command=send_selected_file)
+send_selected_button = tk.Button(root, text="Send Selected File to CNC without Flow Control", command=send_selected_file_serial)
 send_selected_button.grid(row=3, column=1, padx=10, pady=10)
+
+send_selected_button = tk.Button(root, text="Send Selected File to CNC Using Flow Control", command=send_selected_file_serialFC)
+send_selected_button.grid(row=4, column=1, padx=10, pady=10)
 
 reboot_button = tk.Button(root, text="Restart ESP32", command=send_reboot_command)
 reboot_button.grid(row=4, column=0, padx=10, pady=10)
 
 # Add a combobox for selecting files
 file_combobox = ttk.Combobox(root)
-file_combobox.grid(row=4, column=1, padx=10, pady=10)
+file_combobox.grid(row=5, column=1, padx=10, pady=10)
 
 # Add a status box
 status_text = tk.Text(root, height=10, width=50)
-status_text.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+status_text.grid(row=6, column=0, columnspan=2, padx=10, pady=10)
 
 def update_status(message):
     #status_text.insert(tk.END, "update status loop entered" + '\n')
