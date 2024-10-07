@@ -1,5 +1,5 @@
 """
-Revision 3 to Main Branch - ClientR7.py checks out good.
+Revision 10 branch began with known good Revision 7.
 User Interface GUI
 This code generates the user interface and provides
 basic functionality such as:
