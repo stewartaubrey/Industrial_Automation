@@ -215,10 +215,19 @@ reboot_button.grid(row=4, column=0, padx=10, pady=10)
 # Add a combobox for selecting files
 file_combobox = ttk.Combobox(root)
 file_combobox.grid(row=4, column=1, padx=10, pady=10)
+file_combobox['values'] = ['Select File']
+file_combobox.current(0)
+
+# Add a combobox to select machine from predefined list of machines
+machine_combobox = ttk.Combobox(root)
+machine_combobox.grid(row=5, column=1, padx=10, pady=10)
+machine_combobox['values'] = ['Select Machine','Enshu', 'Wyatt', 'Hyndai', 'Frenchy']
+machine_combobox.current(0)
+
 
 # Add a status box
 status_text = tk.Text(root, height=10, width=50)
-status_text.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+status_text.grid(row=6, column=0, columnspan=2, padx=10, pady=10)
 
 def update_status(message):
     #status_text.insert(tk.END, "update status loop entered" + '\n')
