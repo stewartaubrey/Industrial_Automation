@@ -165,6 +165,7 @@ def show_message():
   
 def update_file_list():
     files = list_files_on_esp32()
+    files.insert(0, "            Select File")
     file_combobox['values'] = files
     if files:
         file_combobox.current(0)
@@ -215,13 +216,13 @@ reboot_button.grid(row=4, column=0, padx=10, pady=10)
 # Add a combobox for selecting files
 file_combobox = ttk.Combobox(root)
 file_combobox.grid(row=4, column=1, padx=10, pady=10)
-file_combobox['values'] = ['Select File']
+file_combobox['values'] = ['            Select File']
 file_combobox.current(0)
 
 # Add a combobox to select machine from predefined list of machines
 machine_combobox = ttk.Combobox(root)
 machine_combobox.grid(row=5, column=1, padx=10, pady=10)
-machine_combobox['values'] = ['Select Machine','Enshu', 'Wyatt', 'Hyndai', 'Frenchy']
+machine_combobox['values'] = ['        Select Machine','Enshu', 'Wyatt', 'Hyndai', 'Frenchy']
 machine_combobox.current(0)
 
 
