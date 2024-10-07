@@ -34,10 +34,10 @@ machine_config = {
 
 # Define UART setup details for each machine
 uart_config = {
-    'Enshu': {'baudrate': 9600, 'parity': 'E', 'stopbits': 2},
-    'Wyatt': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
-    'Hyndai': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
-    'Frenchy': {'baudrate': 9600, 'parity': 'N', 'stopbits': 2}
+    'Enshu': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
+    'Wyatt': {'baudrate': 115200, 'parity': 'E', 'stopbits': 2},
+    'Hyndai': {'baudrate': 19200, 'parity': 'O', 'stopbits': 1},
+    'Frenchy': {'baudrate': 57600, 'parity': 'N', 'stopbits': 2}
 }
 
 # Modify existing functions to update the status box
@@ -121,7 +121,7 @@ def select_and_send_file():
 def clear_files_on_esp32():
     try:
         s = socket.socket()
-        s.connect((HOST, PORT))
+        s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
         s.sendall(b'CLEAR_FILES')
         update_status("Command to files cleared on ESP32 sent")
         status = s.recv(1024).decode()  # Wait for status message
@@ -134,7 +134,7 @@ def clear_files_on_esp32():
 def list_files_on_esp32():
     try:
         s = socket.socket()
-        s.connect((HOST, PORT))
+        s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
         s.sendall(b'LIST_FILES')
         data = s.recv(4096).decode()
         s.close()
@@ -152,13 +152,11 @@ def send_selected_file(): #Command to send selected file to CNC machine
     if file_name:
         try:
             s = socket.socket()
-            s.connect((HOST, PORT))
+            s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
             s.sendall(f'SEND_FILE {file_name}'.encode())
             status = s.recv(1024).decode()  # Wait for status message
-            time.sleep(.1)
             s.close()
             update_status(status)
-            update_file_list()  # Refresh the file list after sending a file
         except socket.error as e:
             update_status(f"Socket error: {e}")
     else:
@@ -243,30 +241,30 @@ file_combobox.current(0)
 # Add a combobox to select machine from predefined list of machines
 machine_combobox = ttk.Combobox(root)
 machine_combobox.grid(row=5, column=1, padx=10, pady=10)
-machine_combobox['values'] = ['        Select Machine','Enshu', 'Wyatt', 'Hyndai', 'Frenchy']
+machine_combobox['values'] = ['Select Machine', 'Enshu', 'Wyatt', 'Hyndai', 'Frenchy']
 machine_combobox.current(0)
 
-# Bind the update_host_port function to the <<ComboboxSelected>> event
-machine_combobox.bind("<<ComboboxSelected>>", update_host_port)
 
-# Bind the send_uart_setup_details function to the <<ComboboxSelected>> event
-machine_combobox.bind("<<ComboboxSelected>>", lambda event: send_uart_setup_details())
 
 # Add a status box
 status_text = tk.Text(root, height=10, width=50)
 status_text.grid(row=6, column=0, columnspan=2, padx=10, pady=10)
 
 def update_status(message):
-    #status_text.insert(tk.END, "update status loop entered" + '\n')
     status_text.insert(tk.END, message + '\n')
     status_text.see(tk.END)
 
-def update_host_port(event):
+def update_host_port(event=None):
+    print("host port def")
     global HOST, PORT
     selected_machine = machine_combobox.get().strip()
     if selected_machine in machine_config:
         HOST = machine_config[selected_machine]['HOST']
-        PORT = machine_config[selected_machine]['PORT']
+        try:
+            PORT = int(machine_config[selected_machine]['PORT'])  # Convert PORT to integer
+        except ValueError:
+            update_status(f"Invalid PORT value for {selected_machine}. Using default port 12345.")
+            PORT = 12345  # Default port value
         update_status(f"Updated HOST to {HOST} and PORT to {PORT} for {selected_machine}")
 
 def send_uart_setup_details():
@@ -278,7 +276,7 @@ def send_uart_setup_details():
 
 def send_message_to_server(message):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
+        s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
         s.sendall(message.encode())
         response = s.recv(1024).decode()
         update_status(f"Server response: {response}")
@@ -286,5 +284,13 @@ def send_message_to_server(message):
 # Initial update of the file list
 update_file_list()
 
+update_host_port()
+
+# Bind the update_host_port function to the <<ComboboxSelected>> event
+machine_combobox.bind("<<ComboboxSelected>>", update_host_port)
+
+# Bind the send_uart_setup_details function to the <<ComboboxSelected>> event
+machine_combobox.bind("<<ComboboxSelected>>", lambda event: send_uart_setup_details())
 # Run the application
+
 root.mainloop()
