@@ -32,6 +32,14 @@ machine_config = {
     'Frenchy': {'HOST': '192.168.1.120', 'PORT': 8080}
 }
 
+# Define UART setup details for each machine
+uart_config = {
+    'Enshu': {'baudrate': 9600, 'parity': 'E', 'stopbits': 2},
+    'Wyatt': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
+    'Hyndai': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
+    'Frenchy': {'baudrate': 9600, 'parity': 'N', 'stopbits': 2}
+}
+
 # Modify existing functions to update the status box
 def run_receiver():
     file_name = file_combobox.get()
@@ -241,6 +249,9 @@ machine_combobox.current(0)
 # Bind the update_host_port function to the <<ComboboxSelected>> event
 machine_combobox.bind("<<ComboboxSelected>>", update_host_port)
 
+# Bind the send_uart_setup_details function to the <<ComboboxSelected>> event
+machine_combobox.bind("<<ComboboxSelected>>", lambda event: send_uart_setup_details())
+
 # Add a status box
 status_text = tk.Text(root, height=10, width=50)
 status_text.grid(row=6, column=0, columnspan=2, padx=10, pady=10)
@@ -257,6 +268,20 @@ def update_host_port(event):
         HOST = machine_config[selected_machine]['HOST']
         PORT = machine_config[selected_machine]['PORT']
         update_status(f"Updated HOST to {HOST} and PORT to {PORT} for {selected_machine}")
+
+def send_uart_setup_details():
+    selected_machine = machine_combobox.get().strip()
+    if selected_machine in uart_config:
+        uart_details = uart_config[selected_machine]
+        message = f"SETUP_UART {uart_details['baudrate']} {uart_details['parity']} {uart_details['stopbits']}"
+        send_message_to_server(message)
+
+def send_message_to_server(message):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        s.sendall(message.encode())
+        response = s.recv(1024).decode()
+        update_status(f"Server response: {response}")
 
 # Initial update of the file list
 update_file_list()

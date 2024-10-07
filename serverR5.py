@@ -17,6 +17,7 @@ import socket
 import time
 from machine import UART, reset 
 import uos
+import serial # if code stops working suspect this new change, worked before without it
 
 ssid='StewartNet'
 #ssid='stewartnet'
@@ -125,7 +126,27 @@ def start_server():
             else:
                 print(f"Error: {e}")
 
+def handle_client_connection(client_socket):
+    request = client_socket.recv(1024).decode()
+    if request.startswith("SETUP_UART"):
+        _, baudrate, parity, stopbits = request.split()
+        baudrate = int(baudrate)
+        stopbits = int(stopbits)
+        uart_setup(baudrate, parity, stopbits)
+        client_socket.send("UART setup complete".encode())
+    else:
+        # Handle other requests
+        pass
 
+def uart_setup(baudrate, parity, stopbits):
+    ser = serial.Serial(
+        port='/dev/ttyUSB0',
+        baudrate=baudrate,
+        parity=parity,
+        stopbits=stopbits,
+        bytesize=serial.EIGHTBITS
+    )
+    print(f"UART configured: baudrate={baudrate}, parity={parity}, stopbits={stopbits}")
 
 """
 def send_to_serial(file_name): #no xon/xoff
@@ -269,4 +290,3 @@ def send_file_to_client(client, file_name):
 connect_wifi(ssid, password)
 #connect_wifi('stewartnet', 'trawet07')
 start_server()
-  
