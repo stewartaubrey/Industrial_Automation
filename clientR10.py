@@ -21,7 +21,7 @@ import os
 import time
 
 # Define HOST and PORT constants
-HOST = "default_host"
+HOST = "192.168.1.120"  # Set default host to 192.168.1.120
 PORT = 8080  # Set default port to 8080
 
 # Dictionary to map machine names to their respective HOST and PORT values
@@ -32,12 +32,15 @@ machine_config = {
     'Frenchy': {'HOST': '192.168.1.120', 'PORT': 8080}
 }
 
+# Debug print statement
+print("machine_config:", machine_config)
+
 # Define UART setup details for each machine
 uart_config = {
-    'Enshu': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
-    'Wyatt': {'baudrate': 115200, 'parity': 'E', 'stopbits': 2},
-    'Hyndai': {'baudrate': 19200, 'parity': 'O', 'stopbits': 1},
-    'Frenchy': {'baudrate': 57600, 'parity': 'N', 'stopbits': 2}
+    'Enshu': {'baudrate': 9600, 'parity': 'E', 'stopbits': 2},
+    'Wyatt': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
+    'Hyndai': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
+    'Frenchy': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1}
 }
 
 # Modify existing functions to update the status box
@@ -244,8 +247,6 @@ machine_combobox.grid(row=5, column=1, padx=10, pady=10)
 machine_combobox['values'] = ['        Select Machine', 'Enshu', 'Wyatt', 'Hyndai', 'Frenchy']
 machine_combobox.current(0)
 
-
-
 # Add a status box
 status_text = tk.Text(root, height=10, width=50)
 status_text.grid(row=6, column=0, columnspan=2, padx=10, pady=10)
@@ -260,11 +261,15 @@ def update_host_port(event=None):
     selected_machine = machine_combobox.get().strip()
     if selected_machine in machine_config:
         HOST = machine_config[selected_machine]['HOST']
+        PORT = machine_config[selected_machine]['PORT']
+        print(HOST, "this is host in update_host_port") #als debug
         try:
             PORT = int(machine_config[selected_machine]['PORT'])  # Convert PORT to integer
+            HOST = machine_config[selected_machine]['HOST']
         except ValueError:
             update_status(f"Invalid PORT value for {selected_machine}. Using default port 12345.")
             PORT = 12345  # Default port value
+            print("using port 12345")
         update_status(f"Updated HOST to {HOST} and PORT to {PORT} for {selected_machine}")
 
 def send_uart_setup_details():

@@ -103,7 +103,7 @@ def start_server():
             elif data == b'RECEIVE_SERIAL':
                 receive_from_serial('serial_data.txt')  # Save serial data to 'serial_data.txt'
                 send_status_message(cl, 'Serial data received and saved as serial_data.txt')
-            else: # this section sends selected file to PC
+            #else: # this section sends selected file to PC
                 print("else statement")
                 file_name, file_data = data.split(b'\n', 1)
                 file_name = file_name.decode()
@@ -128,7 +128,7 @@ def start_server():
 def handle_client_connection(client_socket):
     request = client_socket.recv(1024).decode()
     if request.startswith("SETUP_UART"):
-        _, baudrate, parity, stopbits = request.split()
+        baudrate, parity, stopbits = request.split()
         baudrate = int(baudrate)
         stopbits = int(stopbits)
         uart_setup(baudrate, parity, stopbits)
