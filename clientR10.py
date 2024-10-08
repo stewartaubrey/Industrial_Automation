@@ -1,4 +1,6 @@
 """
+Partially tested code for Revision 10.  No known issues at this time.
+
 Revision 10 branch began with known good Revision 7.
 User Interface GUI
 This code generates the user interface and provides
@@ -8,7 +10,7 @@ Receive file listing from remote interface
 Commands to serially transmit selected files to CNC machine connected to remote interface.
 
 Modifications planned for Revision 10:
-1. Change the way the HOST and PORT values are set depending on the machine selected. - Complete but needs testing
+1. Change the way the HOST and PORT values are set depending on the machine selected. - Complete, partially tested
 2. Send the method of flow control to be used ESP32 depending on the machine selected. - Not started
    a. Will need a way to set the flow control method on the ESP32 side. - Not started
 """
@@ -282,6 +284,8 @@ def send_uart_setup_details():
 def send_message_to_server(message):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            print("Message being sent to: ", HOST)
+            print("Message being sent to: ", PORT)
             s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
             s.sendall(message.encode())
             response = s.recv(1024).decode()

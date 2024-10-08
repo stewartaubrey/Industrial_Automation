@@ -5,10 +5,9 @@
     1. Send connection status and info - Complete
     2. Send message confirming command receipt - Complete
     3. Revise receive_from_serial function to timeout if no data received after X attempts
-    4. Set UART parameters comm parameters to match CNC machine selected and sent from client
-      5. Change the flow control method to be used depending on the machine selected by the client
-
-Changed the send_to_serial function prepend the XON character to the file data before sending it to the CNC machine.
+    4. Set UART parameters comm parameters to match CNC machine selected and sent from client - Complete, partially tested
+    5. Change the flow control method to be used depending on the machine selected by the client
+        Changed the send_to_serial function prepend the XON character to the file data before sending it to the CNC machine.
 
 """
 
@@ -103,7 +102,32 @@ def start_server():
             elif data == b'RECEIVE_SERIAL':
                 receive_from_serial('serial_data.txt')  # Save serial data to 'serial_data.txt'
                 send_status_message(cl, 'Serial data received and saved as serial_data.txt')
-            #else: # this section sends selected file to PC
+
+            elif data.startswith(b'SETUP_UART'):
+                print("Setting up UART")
+                try:
+                    parts = data[len('SETUP_UART '):].decode().split()
+                    if len(parts) != 3:
+                        raise ValueError("Invalid number of parameters for SETUP_UART")
+                    
+                    baudrate, parity, stopbits = parts
+                    baudrate = int(baudrate)
+                    stopbits = int(stopbits)
+                    
+                    # Define parity values directly
+                    parity_map = {'N': 0, 'E': 1, 'O': 2}  # Assuming 0=None, 1=Even, 2=Odd
+                    if parity not in parity_map:
+                        raise ValueError(f"Invalid parity value: {parity}")
+                    
+                    uart_setup(baudrate, parity_map[parity], stopbits)
+                    print(f"UART configured: baudrate={baudrate}, parity={parity}, stopbits={stopbits}")
+                    send_status_message(cl, 'UART setup complete')
+                    print("Status message sent")
+                except ValueError as e:
+                    print(f"Error in UART setup: {e}")
+                    send_status_message(cl, f"UART setup failed: {e}")
+
+            else: # this section sends selected file to PC
                 print("else statement")
                 file_name, file_data = data.split(b'\n', 1)
                 file_name = file_name.decode()
@@ -125,8 +149,10 @@ def start_server():
             else:
                 print(f"Error: {e}")
 
+"""
 def handle_client_connection(client_socket):
     request = client_socket.recv(1024).decode()
+    print("Received request:", request)
     if request.startswith("SETUP_UART"):
         baudrate, parity, stopbits = request.split()
         baudrate = int(baudrate)
@@ -136,10 +162,13 @@ def handle_client_connection(client_socket):
     else:
         # Handle other requests
         pass
+"""
 
 def uart_setup(baudrate, parity, stopbits):
-    parity_map = {'N': None, 'E': UART.EVEN, 'O': UART.ODD}
-    uart = UART(1, baudrate=baudrate, parity=parity_map[parity], stop=stopbits)
+    print("Setting up UART")
+    #parity_map = {'N': None, 'E': UART.EVEN, 'O': UART.ODD}
+    uart = UART(1, baudrate=baudrate, parity=parity, stop=stopbits)
+#    uart = UART(1, baudrate=baudrate, parity=parity_map[parity], stop=stopbits)
     print(f"UART configured: baudrate={baudrate}, parity={parity}, stopbits={stopbits}")
     return uart
 
