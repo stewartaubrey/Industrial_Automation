@@ -30,7 +30,7 @@ PORT = 8080  # Set default port to 8080
 machine_config = {
     'Enshu': {'HOST': '192.168.1.120', 'PORT': 8080},
     'Wyatt': {'HOST': '192.168.1.120', 'PORT': 8080},
-    'Hyndai': {'HOST': '192.168.1.120', 'PORT': 8080},
+    'Hyundai': {'HOST': '192.168.1.120', 'PORT': 8080},
     'Frenchy': {'HOST': '192.168.1.120', 'PORT': 8080}
 }
 
@@ -39,10 +39,10 @@ print("machine_config:", machine_config)
 
 # Define UART setup details for each machine
 uart_config = {
-    'Enshu': {'baudrate': 9600, 'parity': 'E', 'stopbits': 2},
-    'Wyatt': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
-    'Hyndai': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1},
-    'Frenchy': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1}
+    'Enshu': {'baudrate': 9600, 'parity': 'E', 'stopbits': 2, 'databits': 7},
+    'Wyatt': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1, 'databits': 8},
+    'Hyundai': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1, 'databits': 8},
+    'Frenchy': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1, 'databits': 8}
 }
 
 # Modify existing functions to update the status box
@@ -246,7 +246,7 @@ file_combobox.current(0)
 # Add a combobox to select machine from predefined list of machines
 machine_combobox = ttk.Combobox(root)
 machine_combobox.grid(row=5, column=1, padx=10, pady=10)
-machine_combobox['values'] = ['        Select Machine', 'Enshu', 'Wyatt', 'Hyndai', 'Frenchy']
+machine_combobox['values'] = ['        Select Machine', 'Enshu', 'Wyatt', 'Hyundai', 'Frenchy']
 machine_combobox.current(0)
 
 # Add a status box
@@ -278,7 +278,7 @@ def send_uart_setup_details():
     selected_machine = machine_combobox.get().strip()
     if selected_machine in uart_config:
         uart_details = uart_config[selected_machine]
-        message = f"SETUP_UART {uart_details['baudrate']} {uart_details['parity']} {uart_details['stopbits']}"
+        message = f"SETUP_UART {uart_details['baudrate']} {uart_details['parity']} {uart_details['stopbits']} {uart_details['databits']}"
         send_message_to_server(message)
 
 def send_message_to_server(message):
@@ -289,7 +289,7 @@ def send_message_to_server(message):
             s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
             s.sendall(message.encode())
             response = s.recv(1024).decode()
-            update_status(f"Server response: {response}")
+            update_status(f"{response}")
     except socket.error as e:
         update_status(f"Socket error: {e}")
 

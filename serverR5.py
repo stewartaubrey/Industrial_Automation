@@ -104,24 +104,24 @@ def start_server():
                 send_status_message(cl, 'Serial data received and saved as serial_data.txt')
 
             elif data.startswith(b'SETUP_UART'):
-                print("Setting up UART")
                 try:
                     parts = data[len('SETUP_UART '):].decode().split()
-                    if len(parts) != 3:
+                    if len(parts) != 4:
                         raise ValueError("Invalid number of parameters for SETUP_UART")
                     
-                    baudrate, parity, stopbits = parts
+                    baudrate, parity, stopbits, databits = parts
                     baudrate = int(baudrate)
                     stopbits = int(stopbits)
+                    databits = int(databits)
                     
                     # Define parity values directly
                     parity_map = {'N': 0, 'E': 1, 'O': 2}  # Assuming 0=None, 1=Even, 2=Odd
                     if parity not in parity_map:
                         raise ValueError(f"Invalid parity value: {parity}")
                     
-                    uart_setup(baudrate, parity_map[parity], stopbits)
-                    print(f"UART configured: baudrate={baudrate}, parity={parity}, stopbits={stopbits}")
-                    send_status_message(cl, 'UART setup complete')
+                    uart_setup(baudrate, parity_map[parity], stopbits, databits)
+                    uart_status = f'\nCNC serial comms configured to: \nbaudrate={baudrate}\nparity={parity}\nstopbits={stopbits}\ndatabits={databits}\n'
+                    send_status_message(cl, uart_status)
                     print("Status message sent")
                 except ValueError as e:
                     print(f"Error in UART setup: {e}")
@@ -164,12 +164,12 @@ def handle_client_connection(client_socket):
         pass
 """
 
-def uart_setup(baudrate, parity, stopbits):
-    print("Setting up UART")
+def uart_setup(baudrate, parity, stopbits, databits):
+    #print("Setting up UART")
     #parity_map = {'N': None, 'E': UART.EVEN, 'O': UART.ODD}
-    uart = UART(1, baudrate=baudrate, parity=parity, stop=stopbits)
+    uart = UART(1, baudrate=baudrate, parity=parity, stop=stopbits, bits=databits)
 #    uart = UART(1, baudrate=baudrate, parity=parity_map[parity], stop=stopbits)
-    print(f"UART configured: baudrate={baudrate}, parity={parity}, stopbits={stopbits}")
+    print(f"UART configured: baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}")
     return uart
 
 """
