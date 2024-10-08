@@ -8,6 +8,8 @@
     4. Set UART parameters comm parameters to match CNC machine selected and sent from client - Complete, partially tested
     5. Change the flow control method to be used depending on the machine selected by the client
         Changed the send_to_serial function prepend the XON character to the file data before sending it to the CNC machine.
+    6. Added timeout to receive_from_serial function to prevent infinite loop if no data is received - Complete
+       Duration of loop is 200000 loops so about 20 seconds, maybe
 
 """
 
@@ -229,25 +231,22 @@ def receive_from_serial(file_name):
         with open(file_name, 'wb') as f:
             while True:
                 count+=1
-                print("inside True loop",count)
+                #print("inside while loop: ",2000-count)
                 chunk = uart.read(1024)
-                time.sleep(1)
-                print(chunk)
+                #time.sleep(1)
+                #print(chunk)
+                if count>=200000:
+                    print("No Data from Serial Port, exiting")
+                    break
                 if chunk:
                     f.write(chunk)
                     print(chunk)
                     #time.sleep(.1)
                     #if (b'%' or b'M30') in chunk:
-                    if (b'M30') in chunk:
+                    #print(20-count, "timeout counter")
+                    if ('M30') in chunk:
                       break
-                    if not chunk:
-                        count=0
-                        if count>=20:
-                            break
-                            count+=1
-                            print(20-count, "timeout counter")
-                        print("No more serial data",count)
-                        #break
+
         print(f'Data received from serial com1 and saved to {file_name}')
     except OSError as e:
         print(f"Error receiving data from serial: {e}")
