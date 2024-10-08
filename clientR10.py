@@ -22,7 +22,7 @@ import time
 
 # Define HOST and PORT constants
 HOST = "default_host"
-PORT = "default_port"
+PORT = 8080  # Set default port to 8080
 
 # Dictionary to map machine names to their respective HOST and PORT values
 machine_config = {
@@ -241,7 +241,7 @@ file_combobox.current(0)
 # Add a combobox to select machine from predefined list of machines
 machine_combobox = ttk.Combobox(root)
 machine_combobox.grid(row=5, column=1, padx=10, pady=10)
-machine_combobox['values'] = ['Select Machine', 'Enshu', 'Wyatt', 'Hyndai', 'Frenchy']
+machine_combobox['values'] = ['        Select Machine', 'Enshu', 'Wyatt', 'Hyndai', 'Frenchy']
 machine_combobox.current(0)
 
 
@@ -275,15 +275,19 @@ def send_uart_setup_details():
         send_message_to_server(message)
 
 def send_message_to_server(message):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
-        s.sendall(message.encode())
-        response = s.recv(1024).decode()
-        update_status(f"Server response: {response}")
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
+            s.sendall(message.encode())
+            response = s.recv(1024).decode()
+            update_status(f"Server response: {response}")
+    except socket.error as e:
+        update_status(f"Socket error: {e}")
 
 # Initial update of the file list
 update_file_list()
 
+# Ensure HOST and PORT are updated before any socket connection attempts
 update_host_port()
 
 # Bind the update_host_port function to the <<ComboboxSelected>> event
@@ -291,6 +295,6 @@ machine_combobox.bind("<<ComboboxSelected>>", update_host_port)
 
 # Bind the send_uart_setup_details function to the <<ComboboxSelected>> event
 machine_combobox.bind("<<ComboboxSelected>>", lambda event: send_uart_setup_details())
-# Run the application
 
+# Run the application
 root.mainloop()
