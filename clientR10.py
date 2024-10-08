@@ -42,7 +42,7 @@ uart_config = {
     'Enshu': {'baudrate': 9600, 'parity': 'E', 'stopbits': 2, 'databits': 7},
     'Wyatt': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1, 'databits': 8},
     'Hyundai': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1, 'databits': 8},
-    'Frenchy': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1, 'databits': 8}
+    'Frenchy': {'baudrate': 57600, 'parity': 'N', 'stopbits': 1, 'databits': 8}
 }
 
 # Modify existing functions to update the status box

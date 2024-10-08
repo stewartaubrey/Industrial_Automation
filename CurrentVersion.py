@@ -192,12 +192,25 @@ def send_to_serial(file_name): #no xon/xoff
 
 
 """
-def send_to_serial(file_name): #with xon/xoff
+
+"""def send_to_serial(file_name): #with xon/xoff
     uart = UART(1, baudrate=9600, tx=16, rx=17)  # Adjust pins and baudrate as needed
     XON = 0x11
     XOFF = 0x13
+    flow_control = True"""
+def send_to_serial(baudrate, parity, stopbits, databits, file_name):
+    # Use the UART parameters to configure the serial communication
+    uart_setup(baudrate, parity, stopbits, databits)
+    XON = 0x11
+    XOFF = 0x13
     flow_control = True
-
+    
+    # Read the file data
+    with open(file_name, 'rb') as f:
+        file_data = f.read()
+    
+    # Send data to the serial port
+    serial_port.write(file_data)
     try:
         with open(file_name, 'rb') as f:
             # Prepend the XON character
