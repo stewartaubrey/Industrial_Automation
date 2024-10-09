@@ -120,7 +120,7 @@ def start_server():
                     baudrate = int(baudrate)
                     stopbits = int(stopbits)
                     databits = int(databits)
-                    flowcontrol = int(flowcontrol)  # Assuming flowcontrol is an integer
+                    flowcontrol = (flowcontrol)  # Assuming flowcontrol is not an integer
                     port = int(port)  # Assuming port is an integer
                     
                     # Define parity values directly
@@ -130,10 +130,7 @@ def start_server():
                     
                     uart_setup(baudrate, parity_map[parity], stopbits, databits, flowcontrol, port)
                     print(baudrate)
-                    uart_status = (
-                        f'\nCNC serial comms configured to: \nbaudrate={baudrate}\nparity={parity}\n'
-                        f'stopbits={stopbits}\ndatabits={databits}\nflowcontrol={flowcontrol}\nport={port}\n'
-                    )
+                    uart_status = (f'\nCNC serial comms configured to: \nbaudrate={baudrate}\nparity={parity}\nstopbits={stopbits}\ndatabits={databits}\nflow={flowcontrol}\nport={port}\n')
                     send_status_message(cl, uart_status)
                     print("Status message sent")
                 except ValueError as e:
@@ -177,12 +174,67 @@ def handle_client_connection(client_socket):
         pass
 """
 
-def uart_setup(baudrate, parity, stopbits, databits):
+"""
+### Plan
+1. List all possible parameters for the `UART` class in MicroPython.
+2. Provide a brief description of each parameter.
+
+### Parameters for `UART` in MicroPython
+- `id`: UART bus ID (e.g., 0, 1, etc.).
+- `baudrate`: Communication speed in bits per second.
+- `bits`: Number of data bits (typically 8).
+- `parity`: Parity checking (None, 0 for even, 1 for odd).
+- `stop`: Number of stop bits (1 or 2).
+- `tx`: TX pin number.
+- `rx`: RX pin number.
+- `rts`: RTS pin number (optional, for hardware flow control).
+- `cts`: CTS pin number (optional, for hardware flow control).
+- `flow`: Flow control (None, `UART.RTS`, `UART.CTS`, `UART.RTS | UART.CTS`, `UART.XON_XOFF`).
+
+Example Code
+```python
+from machine import UART
+
+# Initialize UART with all possible parameters
+uart = UART(
+    id=1,                # UART bus ID
+    baudrate=9600,       # Baud rate
+    bits=8,              # Data bits
+    parity=None,         # Parity (None, 0 for even, 1 for odd)
+    stop=1,              # Stop bits
+    tx=17,               # TX pin
+    rx=16,               # RX pin
+    rts=None,            # RTS pin (optional)
+    cts=None,            # CTS pin (optional)
+    flow=UART.XON_XOFF   # Flow control (None, UART.RTS, UART.CTS, UART.RTS | UART.CTS, UART.XON_XOFF)
+)
+
+def send_data(data):
+    uart.write(data)
+
+# Example usage
+send_data("Hello, UART with all parameters!")
+```
+
+Explanation
+- `id`: Specifies which UART bus to use.
+- `baudrate`: Sets the speed of communication.
+- `bits`: Defines the number of data bits per character.
+- `parity`: Configures parity checking.
+- `stop`: Sets the number of stop bits.
+- `tx` and `rx`: Define the pins used for transmission and reception.
+- `rts` and `cts`: Optional pins for hardware flow control.
+- `flow`: Configures flow control method.
+"""
+
+def uart_setup(baudrate, parity, stopbits, databits, flowcontrol, port):
     print(baudrate, parity, stopbits, databits)
     global uart
     #print("Setting up UART")
     #parity_map = {'N': None, 'E': 0, 'O': 1}
-    uart = UART(1, baudrate=baudrate, parity=parity, stop=stopbits, bits=databits, tx=16, rx=17)
+    print(baudrate, parity, stopbits, databits, flowcontrol, port)
+    
+    uart = UART(port=port,baudrate=9600,bits=8,parity=None,stop=1,tx=16,rx=17,txbuf=256,rxbuf=256)
     #uart = UART(1, baudrate=baudrate, parity=parity_map[parity], stop=stopbits, tx=16, rx=17)
     print(f"UART configured: baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}")
     return uart
@@ -205,7 +257,7 @@ def send_to_serial(file_name): #no xon/xoff
 
 
 """
-def send_file_to_serial(file_name):
+def send_to_serial(file_name):
     # Open the serial port with xon/xoff flow control
     global uart
     #uart = machine.UART(serial_port, baudrate=9600, flow=machine.UART.XON_XOFF)
@@ -219,14 +271,14 @@ def send_file_to_serial(file_name):
                 if not chunk:
                     break
                 # Send the chunk to the serial port
-                uart.write(chunk)
+                UART.write(chunk)
     except Exception as e:
         print("Error:", e)
-    finally:
+    #finally:
         # Close the serial port
-        uart.deinit()
+        #uart.deinit()
 
-"""
+'''
 def send_to_serial(file_name): #with xon/xoff <--- this is the one that works
     print("Executing the send_to_serial function")
     global uart
@@ -257,8 +309,8 @@ def send_to_serial(file_name): #with xon/xoff <--- this is the one that works
                     uart.write(bytes([byte]))
         print(f'File {file_name} sent to serial device')
     except OSError as e:
-        print(f"Error sending file {file_name}: {e}")"""
-
+        print(f"Error sending file {file_name}: {e}")
+'''
 
 def receive_from_serial(file_name):
     global uart
