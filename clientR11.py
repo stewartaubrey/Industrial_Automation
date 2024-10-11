@@ -39,10 +39,10 @@ print("machine_config:", machine_config)
 
 # Define UART setup details for each machine
 uart_config = {
-    'Enshu': {'baudrate': 9600, 'parity': 'E', 'stopbits': 2, 'databits': 7, 'flowcontrol': 'UART.XON_XOFF', 'port': 1},
-    'Wyatt': {'baudrate': 19200, 'parity': 'O', 'stopbits': 1, 'databits': 8, 'flowcontrol': 'None', 'port': 1},
-    'Hyundai': {'baudrate': 9600, 'parity': 'N', 'stopbits': 1, 'databits': 8, 'flowcontrol': 'XON_XOFF', 'port': 1},
-    'Frenchy': {'baudrate': 57600, 'parity': 'N', 'stopbits': 1, 'databits': 8, 'flowcontrol': 'None', 'port': 1}
+    'Enshu': {'baudrate': 9600, 'parity': 'E', 'databits': 7, 'stopbits': 2, 'flowcontrol': 'UART.XON_XOFF', 'port': 1},
+    'Wyatt': {'baudrate': 19200, 'parity': 'O', 'databits': 8, 'stopbits': 1,  'flowcontrol': 'None', 'port': 1},
+    'Hyundai': {'baudrate': 9600, 'parity': 'N', 'databits': 8, 'stopbits': 1,  'flowcontrol': 'XON_XOFF', 'port': 1},
+    'Frenchy': {'baudrate': 57600, 'parity': 'N', 'databits': 8, 'stopbits': 1,  'flowcontrol': 'UART.RTS | UART.CTS', 'port': 1}
 }
 
 # Modify existing functions to update the status box
@@ -279,7 +279,9 @@ def send_uart_setup_details():
     if selected_machine in uart_config:
         uart_details = uart_config[selected_machine]
         message = (
-            f"SETUP_UART {uart_details['baudrate']} {uart_details['parity']} {uart_details['stopbits']} {uart_details['databits']} {uart_details['flowcontrol']} {uart_details['port']}")
+            f"SETUP_UART {uart_details['port']} {uart_details['baudrate']} {uart_details['parity']} {uart_details['databits']} {uart_details['stopbits']} {uart_details['flowcontrol']} ")
+            #f"SETUP_UART {uart_details['port']} {uart_details['baudrate']} {uart_details['parity']} {uart_details['databits']} {uart_details['stopbits']} ")
+        print(message)
         send_message_to_server(message)
 
 def send_message_to_server(message):

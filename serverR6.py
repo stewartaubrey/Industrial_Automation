@@ -66,7 +66,7 @@ def start_server():
     while True:
         #cl, addr = s.accept()
         time.sleep(.1)
-        send_status_message(cl, "Connected!")
+        #send_status_message(cl, "Connected!")
          
         try:
             cl, addr = s.accept()
@@ -113,25 +113,30 @@ def start_server():
 
             elif data.startswith(b'SETUP_UART'):
                 try:
+                    print(f"Received data: {data}")
                     parts = data[len('SETUP_UART '):].decode().split()
-                    if len(parts) != 6:
+                    print(f"Parts after splitting: {parts}")
+                    print(f"Number of parts: {len(parts)}")
+                    if len(parts) < 6:
                         raise ValueError("Invalid number of parameters for SETUP_UART")
                     
-                    baudrate, parity, stopbits, databits, flowcontrol, port = parts
-                    baudrate = int(baudrate)
-                    stopbits = int(stopbits)
-                    databits = int(databits)
-                    flowcontrol = (flowcontrol)  # Assuming flowcontrol is not an integer
-                    port = int(port)  # Assuming port is an integer
+                    port = int(parts[0])  # Assuming port is an integer
+                    baudrate = int(parts[1])
+                    parity = parts[2]  # Assuming parity is not an integer
+                    databits = int(parts[3])
+                    stopbits = int(parts[4])
+                    flowcontrol = ' '.join(parts[5:])  # Join the remaining parts into a single string
+                    print(port, baudrate, parity, databits, stopbits, flowcontrol)
                     
                     # Define parity values directly
                     parity_map = {'N': 0, 'E': 1, 'O': 2}  # Assuming 0=None, 1=Even, 2=Odd
                     if parity not in parity_map:
                         raise ValueError(f"Invalid parity value: {parity}")
                     
-                    uart_setup(baudrate, parity_map[parity], stopbits, databits, flowcontrol, port)
+                    #uart_setup(port, baudrate, parity_map[parity], databits, stopbits, flowcontrol)
+                    uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol)
                     print(baudrate)
-                    uart_status = (f'\nCNC serial comms configured to: \nbaudrate={baudrate}\nparity={parity}\nstopbits={stopbits}\ndatabits={databits}\nflow={flowcontrol}\nport={port}\n')
+                    uart_status = (f'\nCNC serial comms configured to: \nbaudrate={baudrate}\nparity={parity}\ndatabits={databits}\nstopbits={stopbits}\nflow={flowcontrol}\nport={port}\n')
                     send_status_message(cl, uart_status)
                     print("Status message sent")
                 except ValueError as e:
@@ -228,17 +233,65 @@ Explanation
 - `flow`: Configures flow control method.
 """
 
-def uart_setup(baudrate, parity, stopbits, databits, flowcontrol, port):
-    print(baudrate, parity, stopbits, databits)
+def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
+    global uart
+
+    # Map flow control strings to UART constants
+    flowcontrol_map = {
+        'None': 0,
+        'UART.RTS': UART.RTS,
+        'UART.CTS': UART.CTS,
+        'UART.RTS | UART.CTS': UART.RTS | UART.CTS,
+    }
+    print(parity)
+    # Map parity strings to UART constants
+    parity_map = {'None': None, '0': 0, '1': 1}
+
+    # Validate flow control
+    if flowcontrol not in flowcontrol_map:
+        raise ValueError(f"Invalid flow control value: {flowcontrol}")
+
+    # Validate parity
+    #if parity not in parity_map:
+        #raise ValueError(f"Invalid parity value: {parity}")
+
+    # Print the parameters for debugging
+    print(f" Settings going int uart def - port: {port}, baudrate: {baudrate}, parity: {parity}, databits: {databits},stopbits: {stopbits}, flowcontrol: {flowcontrol}")
+
+    # Initialize UART with the mapped parameters
+    
+    #uart=UART(1,tx=16,rx=17,cts=18)
+
+    uart = UART(
+        1,
+        baudrate=baudrate,
+        bits=databits,
+        #parity=parity_map[parity],
+        parity=0,
+        stop=stopbits,
+        flow=flowcontrol_map[flowcontrol],
+        tx=16,
+        rx=17,
+        cts=18,
+        rts=19
+    )
+
+    # Print the configured UART for debugging
+    print(f"UART configured: port={port}, baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}, flow={flowcontrol}")
+
+    return uart
+
+
+"""def uart_setup(port, baudrate, parity, stopbits, databits, flowcontrol):
     global uart
     #print("Setting up UART")
     #parity_map = {'N': None, 'E': 0, 'O': 1}
-    print(baudrate, parity, stopbits, databits, flowcontrol, port)
-    
-    uart = UART(port=port,baudrate=9600,bits=8,parity=None,stop=1,tx=16,rx=17,cts=18, rts=19, txbuf=256,rxbuf=256)
+    print(port, baudrate, parity, stopbits, databits, flowcontrol)
+    uart = UART(port=port,baudrate=baudrate,bits=databits,parity=parity,stop=stopbits,flow=flowcontrol,tx=16,rx=17,cts=18, rts=19)
+    #uart = UART(port=port,baudrate=9600,bits=8,parity=None,stop=1,tx=16,rx=17,cts=18, rts=19, txbuf=256,rxbuf=256)
     #uart = UART(1, baudrate=baudrate, parity=parity_map[parity], stop=stopbits, tx=16, rx=17)
-    print(f"UART configured: baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}")
-    return uart
+    print(f"UART configured: port={port},baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}", flow={flowcontrol})
+    return uart"""
 
 """
 def send_to_serial(file_name): #no xon/xoff
