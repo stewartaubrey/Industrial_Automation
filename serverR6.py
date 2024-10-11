@@ -66,7 +66,8 @@ def start_server():
     while True:
         #cl, addr = s.accept()
         time.sleep(.1)
-        #send_status_message(cl, "Connected!")
+        send_status_message(cl, "Connected!")
+         
         try:
             cl, addr = s.accept()
             print('Client connected from', addr)           
@@ -234,7 +235,7 @@ def uart_setup(baudrate, parity, stopbits, databits, flowcontrol, port):
     #parity_map = {'N': None, 'E': 0, 'O': 1}
     print(baudrate, parity, stopbits, databits, flowcontrol, port)
     
-    uart = UART(port=port,baudrate=9600,bits=8,parity=None,stop=1,tx=16,rx=17,txbuf=256,rxbuf=256)
+    uart = UART(port=port,baudrate=9600,bits=8,parity=None,stop=1,tx=16,rx=17,cts=18, rts=19, txbuf=256,rxbuf=256)
     #uart = UART(1, baudrate=baudrate, parity=parity_map[parity], stop=stopbits, tx=16, rx=17)
     print(f"UART configured: baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}")
     return uart
