@@ -19,10 +19,18 @@ import time
 from machine import UART, reset 
 import uos
 
-ssid='StewartNet'
+ssid1 = 'stewartnet'
+password1 = 'trawet07'
+ssid2 = 'StewartNet'
+password2 = 'trawet07'
+
+# default UART configuration (Enshu)
+uart = UART(1, baudrate=9600, bits=7, parity=1, stop=2, tx=16, rx=17, cts=18, rts=19)
+
+"""ssid='StewartNet'
 #ssid='stewartnet'
 password='trawet07'
-uart = None
+uart = None"""
 
 def send_status_message(client, message):
     try:
@@ -31,7 +39,7 @@ def send_status_message(client, message):
         print(f"Error sending status message: {e}")
 
 
-def connect_wifi(ssid, password):
+def connect_wifi(ssid1, password1, ssid2, password2):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     # Set static IP address
@@ -40,15 +48,33 @@ def connect_wifi(ssid, password):
     gateway = '192.168.1.1'
     dns = '8.8.8.8'
     wlan.ifconfig((ip, subnet, gateway, dns))
-    wlan.connect(ssid, password)
-    
-    while not wlan.isconnected():
-        print('Connecting to network...')
-        #send_status_message(cl,'Connecting to network...')
-        time.sleep(1)
-    
-    print('Network connected!')
-    print('IP address:', wlan.ifconfig()[0])
+
+    def try_connect(ssid, password):
+        try:
+            wlan.connect(ssid, password)
+            start_time = time.time()
+            while not wlan.isconnected():
+                if time.time() - start_time > 10:
+                    return False
+                print(f'Connecting to network {ssid}...')
+                time.sleep(1)
+            return True
+        except OSError as e:
+            print(f"Error connecting to network {ssid}: {e}")
+            return False
+
+    # Try to connect to the first SSID
+    if try_connect(ssid1, password1):
+        print(f'Connected to {ssid1}')
+    else:
+        print(f'Failed to connect to {ssid1}, trying {ssid2}')
+        # Try to connect to the second SSID
+        if try_connect(ssid2, password2):
+            print(f'Connected to {ssid2}')
+        else:
+            print(f'Failed to connect to {ssid2}')
+            # Optionally, you can reset the device or handle the failure as needed
+            reset()
     #send_status_message(client,'Network conneted!')
     #send_status_message(cl,'IP address' + wlan.ifconfig()[0])
 
@@ -57,181 +83,112 @@ def connect_wifi(ssid, password):
 def start_server():
     addr = socket.getaddrinfo('0.0.0.0', 8080)[0][-1]
     s = socket.socket()
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Reuse the address
-    s.bind(addr)
-    s.listen(1)
-    #send_status_message(cl, "Connected!")
-    #s.settimeout(30)  # Increase the timeout period to 30 seconds
-    print('Listening on', addr)
-    while True:
-        #cl, addr = s.accept()
-        time.sleep(.1)
-        #send_status_message(cl, "Connected!")
-         
-        try:
-            cl, addr = s.accept()
-            print('Client connected from', addr)           
-            data = cl.recv(1024)
-            
-            if data == b'CLEAR_FILES': #clears all files on ESP32, confirmed
-                print("clearing files")
-                clear_files()
-                send_status_message(cl, 'All User files cleared on ESP32')
-            
-            elif data == b'LIST_FILES': #Lists all files on CNC - used after every op to refresh client list
-                print("lists files")
-                list_files(cl)
-                send_status_message(cl, 'File list sent to client')
-            
-            elif data.startswith(b'SEND_FILE'): #Sends selected file to CNC
-                print("Sending file to CNC serial port")
-                file_name = data[len('SEND_FILE '):].decode()
-                send_to_serial(file_name)
-                send_status_message(cl, f'File {file_name} sent to CNC')
-            
-            elif data.startswith(b'DELETE_FILE'): #Deletes file selected on client window
-                print("Deleted file: " + file_name)
-                file_name = data[len('DELETE_FILE '):].decode()
-                delete_file(file_name)
-                send_status_message(cl, f'File {file_name} deleted from ESP32')
-
-            elif data.startswith(b'RECEIVE_FILE'): # I think this gets a serial file from CNC
-                print("Sending " + file_name + " to CNC")
-                file_name = data[len('RECEIVE_FILE '):].decode()
-                send_file_to_client(cl, file_name)
-                send_status_message(cl, f'File {file_name} sent to client')
-
-            elif data == b'REBOOT':
-                send_status_message(cl, 'Reboot command received, \n            see you on the other side!')
-                cl.close()
-                print('Reboot command received')
-                time.sleep(1)
-                reset()  # Reboot the ESP32
-            elif data == b'RECEIVE_SERIAL':
-                receive_from_serial('serial_data.txt')  # Save serial data to 'serial_data.txt'
-                send_status_message(cl, 'Serial data received and saved as serial_data.txt')
-
-            elif data.startswith(b'SETUP_UART'):
-                try:
-                    print(f"Received data: {data}")
-                    parts = data[len('SETUP_UART '):].decode().split()
-                    print(f"Parts after splitting: {parts}")
-                    print(f"Number of parts: {len(parts)}")
-                    if len(parts) < 6:
-                        raise ValueError("Invalid number of parameters for SETUP_UART")
-                    
-                    port = int(parts[0])  # Assuming port is an integer
-                    baudrate = int(parts[1])
-                    parity = parts[2]  # Assuming parity is not an integer
-                    databits = int(parts[3])
-                    stopbits = int(parts[4])
-                    flowcontrol = ' '.join(parts[5:])  # Join the remaining parts into a single string
-                    print(port, baudrate, parity, databits, stopbits, flowcontrol)
-                    
-                    # Define parity values directly
-                    parity_map = {'N': 0, 'E': 1, 'O': 2}  # Assuming 0=None, 1=Even, 2=Odd
-                    if parity not in parity_map:
-                        raise ValueError(f"Invalid parity value: {parity}")
-                    
-                    #uart_setup(port, baudrate, parity_map[parity], databits, stopbits, flowcontrol)
-                    uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol)
-                    print(baudrate)
-                    uart_status = (f'\nCNC serial comms configured to: \nbaudrate={baudrate}\nparity={parity}\ndatabits={databits}\nstopbits={stopbits}\nflow={flowcontrol}\nport={port}\n')
-                    send_status_message(cl, uart_status)
-                    print("Status message sent")
-                except ValueError as e:
-                    print(f"Error in UART setup: {e}")
-                    send_status_message(cl, f"UART setup failed: {e}")
-
-            else: # this section sends selected file to PC
-                print("else statement")
-                file_name, file_data = data.split(b'\n', 1)
-                file_name = file_name.decode()
+    try:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Reuse the address
+        s.bind(addr)
+        s.listen(1)  # This line specifies the maximum number of queued connections
+        print('Listening on', addr)
+        while True:
+            time.sleep(.1)
+            try:
+                cl, addr = s.accept()  # Accepting client connections here
+                print('Client connected from', addr)
+                data = cl.recv(1024)
                 
-                file_path = file_name
-                with open(file_path, 'wb') as f:
-                    f.write(file_data)
-                    while True:
-                        data = cl.recv(1024)
-                        if not data:
-                            break
-                        f.write(data)
-                send_status_message(cl, f'File {file_name} received and saved to {file_path}')
-                cl.close()
-                print(f'File {file_name} received and saved to {file_path}')
-        except OSError as e:
-            if e.args[0] == 116:  # ETIMEDOUT error code
-                print('Socket timeout, no client connected')
-            else:
-                print(f"Error: {e}")
+                if data == b'CLEAR_FILES':
+                    print("clearing files")
+                    clear_files()
+                    send_status_message(cl, 'All User files cleared on ESP32')
+                
+                elif data == b'LIST_FILES':
+                    print("lists files")
+                    list_files(cl)
+                    send_status_message(cl, 'File list sent to client')
+                
+                elif data.startswith(b'SEND_FILE'):
+                    print("Sending file to CNC serial port")
+                    file_name = data[len('SEND_FILE '):].decode()
+                    send_to_serial(file_name)
+                    send_status_message(cl, f'File {file_name} sent to CNC')
+                
+                elif data.startswith(b'DELETE_FILE'):
+                    print("Deleted file: " + file_name)
+                    file_name = data[len('DELETE_FILE '):].decode()
+                    delete_file(file_name)
+                    send_status_message(cl, f'File {file_name} deleted from ESP32')
 
-"""
-def handle_client_connection(client_socket):
-    request = client_socket.recv(1024).decode()
-    print("Received request:", request)
-    if request.startswith("SETUP_UART"):
-        baudrate, parity, stopbits = request.split()
-        baudrate = int(baudrate)
-        stopbits = int(stopbits)
-        uart_setup(baudrate, parity, stopbits)
-        client_socket.send("UART setup complete".encode())
-    else:
-        # Handle other requests
-        pass
-"""
+                elif data.startswith(b'RECEIVE_FILE'):
+                    print("Sending " + file_name + " to CNC")
+                    file_name = data[len('RECEIVE_FILE '):].decode()
+                    send_file_to_client(cl, file_name)
+                    send_status_message(cl, f'File {file_name} sent to client')
 
-"""
-### Plan
-1. List all possible parameters for the `UART` class in MicroPython.
-2. Provide a brief description of each parameter.
+                elif data == b'REBOOT':
+                    send_status_message(cl, 'Reboot command received, \n            see you on the other side!')
+                    cl.close()
+                    print('Reboot command received')
+                    time.sleep(1)
+                    reset()  # Reboot the ESP32
+                elif data == b'RECEIVE_SERIAL':
+                    receive_from_serial('serial_data.txt')  # Save serial data to 'serial_data.txt'
+                    send_status_message(cl, 'Serial data received and saved as serial_data.txt')
 
-### Parameters for `UART` in MicroPython
-- `id`: UART bus ID (e.g., 0, 1, etc.).
-- `baudrate`: Communication speed in bits per second.
-- `bits`: Number of data bits (typically 8).
-- `parity`: Parity checking (None, 0 for even, 1 for odd).
-- `stop`: Number of stop bits (1 or 2).
-- `tx`: TX pin number.
-- `rx`: RX pin number.
-- `rts`: RTS pin number (optional, for hardware flow control).
-- `cts`: CTS pin number (optional, for hardware flow control).
-- `flow`: Flow control (None, `UART.RTS`, `UART.CTS`, `UART.RTS | UART.CTS`, `UART.XON_XOFF`).
+                elif data.startswith(b'SETUP_UART'):
+                    try:
+                        print(f"Received data: {data}")
+                        parts = data[len('SETUP_UART '):].decode().split()
+                        print(f"Parts after splitting: {parts}")
+                        print(f"Number of parts: {len(parts)}")
+                        if len(parts) < 6:
+                            raise ValueError("Invalid number of parameters for SETUP_UART")
+                        
+                        port = int(parts[0])  # Assuming port is an integer
+                        baudrate = int(parts[1])
+                        parity = parts[2]  # Assuming parity is not an integer
+                        databits = int(parts[3])
+                        stopbits = int(parts[4])
+                        flowcontrol = ' '.join(parts[5:])  # Join the remaining parts into a single string
+                        print(port, baudrate, parity, databits, stopbits, flowcontrol)
+                        
+                        # Define parity values directly
+                        parity_map = {'N': 0, 'E': 1, 'O': 2}  # Assuming 0=None, 1=Even, 2=Odd
+                        if parity not in parity_map:
+                            raise ValueError(f"Invalid parity value: {parity}")
+                        
+                        uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol)
+                        print(baudrate)
+                        uart_status = (f'\nCNC serial comms configured to: \nbaudrate={baudrate}\nparity={parity}\ndatabits={databits}\nstopbits={stopbits}\nflow={flowcontrol}\nport={port}\n')
+                        send_status_message(cl, uart_status)
+                        print("Status message sent")
+                    except ValueError as e:
+                        print(f"Error in UART setup: {e}")
+                        send_status_message(cl, f"UART setup failed: {e}")
 
-Example Code
-```python
-from machine import UART
-
-# Initialize UART with all possible parameters
-uart = UART(
-    id=1,                # UART bus ID
-    baudrate=9600,       # Baud rate
-    bits=8,              # Data bits
-    parity=None,         # Parity (None, 0 for even, 1 for odd)
-    stop=1,              # Stop bits
-    tx=17,               # TX pin
-    rx=16,               # RX pin
-    rts=None,            # RTS pin (optional)
-    cts=None,            # CTS pin (optional)
-    flow=UART.XON_XOFF   # Flow control (None, UART.RTS, UART.CTS, UART.RTS | UART.CTS, UART.XON_XOFF)
-)
-
-def send_data(data):
-    uart.write(data)
-
-# Example usage
-send_data("Hello, UART with all parameters!")
-```
-
-Explanation
-- `id`: Specifies which UART bus to use.
-- `baudrate`: Sets the speed of communication.
-- `bits`: Defines the number of data bits per character.
-- `parity`: Configures parity checking.
-- `stop`: Sets the number of stop bits.
-- `tx` and `rx`: Define the pins used for transmission and reception.
-- `rts` and `cts`: Optional pins for hardware flow control.
-- `flow`: Configures flow control method.
-"""
+                else:
+                    print("else statement")
+                    file_name, file_data = data.split(b'\n', 1)
+                    file_name = file_name.decode()
+                    
+                    file_path = file_name
+                    with open(file_path, 'wb') as f:
+                        f.write(file_data)
+                        while True:
+                            data = cl.recv(1024)
+                            if not data:
+                                break
+                            f.write(data)
+                    send_status_message(cl, f'File {file_name} received and saved to {file_path}')
+                    cl.close()
+                    print(f'File {file_name} received and saved to {file_path}')
+            except OSError as e:
+                if e.args[0] == 116:  # ETIMEDOUT error code
+                    print('Socket timeout, no client connected')
+                else:
+                    print(f"start_server generic OSError - Error: {e}")
+            finally:
+                cl.close()  # Ensure the client connection is closed. This is important! Otherwise, the server will hang als 
+    finally:
+        s.close()
 
 def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
     global uart
@@ -277,46 +234,19 @@ def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
     )
 
     # Print the configured UART for debugging
-    print(f"UART configured: port={port}, baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}, flow={flowcontrol}")
+    #print(f"UART configured: port={port}, baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}, flow={flowcontrol}")
+    print(f"UART configured: {port}, baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}, flow={flowcontrol}")
 
     return uart
 
-
-"""def uart_setup(port, baudrate, parity, stopbits, databits, flowcontrol):
-    global uart
-    #print("Setting up UART")
-    #parity_map = {'N': None, 'E': 0, 'O': 1}
-    print(port, baudrate, parity, stopbits, databits, flowcontrol)
-    uart = UART(port=port,baudrate=baudrate,bits=databits,parity=parity,stop=stopbits,flow=flowcontrol,tx=16,rx=17,cts=18, rts=19)
-    #uart = UART(port=port,baudrate=9600,bits=8,parity=None,stop=1,tx=16,rx=17,cts=18, rts=19, txbuf=256,rxbuf=256)
-    #uart = UART(1, baudrate=baudrate, parity=parity_map[parity], stop=stopbits, tx=16, rx=17)
-    print(f"UART configured: port={port},baudrate={baudrate}, parity={parity}, databits={databits}, stopbits={stopbits}", flow={flowcontrol})
-    return uart"""
-
-"""
-def send_to_serial(file_name): #no xon/xoff
-    global uart
-    #uart = UART(1, baudrate=9600, tx=16, rx=17, bits=8, parity=None, stop=1)  # Adjust pins and baudrate as needed
-
-    try:
-        with open(file_name, 'rb') as f:
-            while True:
-                chunk = f.read(1024)
-                if not chunk:
-                    break
-                uart.write(chunk)
-        print(f'File {file_name} sent to serial device')
-    except OSError as e:
-        print(f"Error sending file {file_name}: {e}")
-
-
-"""
 def send_to_serial(file_name):
-    # Open the serial port with xon/xoff flow control
     global uart
-    #uart = machine.UART(serial_port, baudrate=9600, flow=machine.UART.XON_XOFF)
-    
+
     try:
+        # Check if the file exists
+        if file_name not in uos.listdir():
+            raise FileNotFoundError(f"File {file_name} does not exist.")
+        
         # Open the file in binary read mode
         with open(file_name, 'rb') as file:
             while True:
@@ -325,12 +255,9 @@ def send_to_serial(file_name):
                 if not chunk:
                     break
                 # Send the chunk to the serial port
-                UART.write(chunk)
+                uart.write(chunk)
     except Exception as e:
-        print("Error:", e)
-    #finally:
-        # Close the serial port
-        #uart.deinit()
+        print("send_to_serial - Error:", e)
 
 '''
 def send_to_serial(file_name): #with xon/xoff <--- this is the one that works
@@ -429,7 +356,7 @@ def clear_files():
                     print(f"Error removing file {item}: {e}")
         print('All non-Python files cleared')
     except OSError as e:
-        print(f"Error: {e}")
+        print(f"clear_files - Error: {e}")
 
 def list_files(client):
     files = []
@@ -457,6 +384,5 @@ def send_file_to_client(client, file_name):
         print(f"Error sending file {file_name}: {e}")
 
 # Connect to Wi-Fi with the specified credentials
-connect_wifi(ssid, password)
-#connect_wifi('stewartnet', 'trawet07')
+connect_wifi(ssid1, password1, ssid2, password2)
 start_server()
