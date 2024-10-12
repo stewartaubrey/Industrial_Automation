@@ -19,7 +19,7 @@ import time
 from machine import UART, reset 
 import uos
 
-ssid1 = 'stewartnet'
+ssid1 = 'StewartNet'
 password1 = 'trawet07'
 ssid2 = 'StewartNet'
 password2 = 'trawet07'
@@ -50,18 +50,34 @@ def connect_wifi(ssid1, password1, ssid2, password2):
     wlan.ifconfig((ip, subnet, gateway, dns))
 
     def try_connect(ssid, password):
-        try:
-            wlan.connect(ssid, password)
-            start_time = time.time()
-            while not wlan.isconnected():
-                if time.time() - start_time > 10:
-                    return False
-                print(f'Connecting to network {ssid}...')
-                time.sleep(1)
+        print("inside try_connect")
+        print(f"Trying to connect to network {ssid}...")
+        if not wlan.isconnected():
+            try:
+                print("before wlan")
+                if not wlan.isconnected():
+                    print("Not connected to a network.")
+                    wlan.connect(ssid, password)
+                else:
+                    print("Already connected to a network.")
+                #wlan.connect(ssid, password)
+                print("after wlan")
+                if wlan.isconnected():
+                    print(f'Connected to network {ssid}')
+                    return True
+                start_time = time.time()
+                while not wlan.isconnected():
+                    if time.time() - start_time > 10:
+                        return False
+                    print(f'Connecting to network {ssid}...')
+                    time.sleep(1)
+                return True
+            except OSError as e:
+                print(f"OSError - Error connecting to network {ssid}: {e}")
+                return False
+        else:
+            print(f'Already connected to network {ssid}')
             return True
-        except OSError as e:
-            print(f"Error connecting to network {ssid}: {e}")
-            return False
 
     # Try to connect to the first SSID
     if try_connect(ssid1, password1):
@@ -74,7 +90,8 @@ def connect_wifi(ssid1, password1, ssid2, password2):
         else:
             print(f'Failed to connect to {ssid2}')
             # Optionally, you can reset the device or handle the failure as needed
-            reset()
+            print('Failed to connect to any network, resetting...')
+            #reset()
     #send_status_message(client,'Network conneted!')
     #send_status_message(cl,'IP address' + wlan.ifconfig()[0])
 
