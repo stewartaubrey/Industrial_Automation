@@ -49,7 +49,7 @@ flow specifies which hardware flow control signals to use. The value is a bitmas
 uart_config = {
     'Enshu': {'baudrate': 9600, 'parity': 'E', 'databits': 7, 'stopbits': 2, 'flowcontrol': 'None', 'port': 1},
     'Wyatt': {'baudrate': 9600, 'parity': 'N', 'databits': 8, 'stopbits': 1,  'flowcontrol': 'None', 'port': 1},
-    'Hyundai': {'baudrate': 9600, 'parity': 'N', 'databits': 8, 'stopbits': 1,  'flowcontrol': 'None', 'port': 1},
+    'Hyundai': {'baudrate': 9600, 'parity': 'N', 'databits': 8, 'stopbits': 1,  'flowcontrol': 'xonxoff', 'port': 1},
     'Frenchy': {'baudrate': 9600, 'parity': 'N', 'databits': 8, 'stopbits': 1,  'flowcontrol': 'UART.RTS | UART.CTS', 'port': 1}
 }
 

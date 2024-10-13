@@ -4,12 +4,13 @@
     Next upgrade is setup messaging back to client:
     1. Send connection status and info - Complete
     2. Send message confirming command receipt - Complete
-    3. Revise receive_from_serial function to timeout if no data received after X attempts
+    3. Revise receive_from_serial function to timeout if no data received after X attempts - Complete
     4. Set UART parameters comm parameters to match CNC machine selected and sent from client - Complete, tested
     5. Change the flow control method to be used depending on the machine selected by the client
         Changed the send_to_serial function prepend the XON character to the file data before sending it to the CNC machine.
     6. Added timeout to receive_from_serial function to prevent infinite loop if no data is received - Complete
        Duration of loop is 200000 loops so about 20 seconds, maybe
+    7. Implement xon/xoff software flow control
 
 """
 
@@ -23,6 +24,8 @@ ssid1 = 'StewartNet'
 password1 = 'trawet07'
 ssid2 = 'StewartNet'
 password2 = 'trawet07'
+
+xonxoff = False
 
 # default UART configuration (Enshu)
 uart = UART(1, baudrate=9600, bits=7, parity=1, stop=2, tx=16, rx=17, cts=18, rts=19)
@@ -125,7 +128,9 @@ def start_server():
                 elif data.startswith(b'SEND_FILE'):
                     print("Sending file to CNC serial port")
                     file_name = data[len('SEND_FILE '):].decode()
-                    send_to_serial(file_name)
+                    if xonxoff == True:
+                        send_to_serial_xonxoff(file_name)
+                    else: send_to_serial(file_name)
                     send_status_message(cl, f'File {file_name} sent to CNC')
                 
                 elif data.startswith(b'DELETE_FILE'):
@@ -166,7 +171,9 @@ def start_server():
                         stopbits = int(parts[4])
                         flowcontrol = ' '.join(parts[5:])  # Join the remaining parts into a single string
                         print(port, baudrate, parity, databits, stopbits, flowcontrol)
-                        
+                        if 'xonxoff' in flowcontrol:
+                            xonxoff = True
+
                         # Define parity values directly
                         parity_map = {'N': 0, 'E': 1, 'O': 2}  # Assuming 0=None, 1=Even, 2=Odd
                         if parity not in parity_map:
@@ -216,6 +223,7 @@ def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
         'UART.RTS': UART.RTS,
         'UART.CTS': UART.CTS,
         'UART.RTS | UART.CTS': UART.RTS | UART.CTS,
+        'xonxoff': 0  # 0x100 is the constant for software flow control
     }
     print(parity)
     # Map parity strings to UART constants
@@ -228,7 +236,7 @@ def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
     # Validate parity
     #if parity not in parity_map:
         #raise ValueError(f"Invalid parity value: {parity}")
-
+ 
     # Print the parameters for debugging
     print(f" Settings going int uart def - port: {port}, baudrate: {baudrate}, parity: {parity}, databits: {databits},stopbits: {stopbits}, flowcontrol: {flowcontrol}")
 
@@ -276,10 +284,10 @@ def send_to_serial(file_name):
     except Exception as e:
         print("send_to_serial - Error:", e)
 
-'''
-def send_to_serial(file_name): #with xon/xoff <--- this is the one that works
-    print("Executing the send_to_serial function")
-    global uart
+
+def send_to_serial_xonxoff(file_name): #with xon/xoff <--- this is the one that works
+    print("Executing the send_to_serial_xonxoff function")
+    global uart #may need to adjust this for software flow control
     if uart is None:
         print("UART is not configured. Please call uart_setup first.")
         return
@@ -308,7 +316,7 @@ def send_to_serial(file_name): #with xon/xoff <--- this is the one that works
         print(f'File {file_name} sent to serial device')
     except OSError as e:
         print(f"Error sending file {file_name}: {e}")
-'''
+
 
 def receive_from_serial(file_name):
     global uart

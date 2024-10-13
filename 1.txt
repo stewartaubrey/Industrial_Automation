@@ -1,0 +1,17 @@
+%MPF1001 
+; 0.8 Die Single Side
+; T1 NR=0.005 - ZMIN=-1.0402 - groove turning
+; T3 NR=0.0156 - ZMIN=-0.9522 - boring turning
+; T4 NR=0.0315 - ZMIN=-1.1101 - general turning
+; T5 D=0.25 CR=0 TAPER=118deg - ZMIN=-0.21 - center drill
+; T6 D=0.25 CR=0 TAPER=118deg - ZMIN=-1.0904 - drill
+N10 G90 G94 G18
+N11 G70
+N12 G92 S4000
+D0
+N13 G53 G0 X10.2
+N14 G53 Z23.1
+
+
+N493 M30
+%

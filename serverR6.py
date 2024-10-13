@@ -4,12 +4,13 @@
     Next upgrade is setup messaging back to client:
     1. Send connection status and info - Complete
     2. Send message confirming command receipt - Complete
-    3. Revise receive_from_serial function to timeout if no data received after X attempts
+    3. Revise receive_from_serial function to timeout if no data received after X attempts - Complete
     4. Set UART parameters comm parameters to match CNC machine selected and sent from client - Complete, tested
     5. Change the flow control method to be used depending on the machine selected by the client
         Changed the send_to_serial function prepend the XON character to the file data before sending it to the CNC machine.
     6. Added timeout to receive_from_serial function to prevent infinite loop if no data is received - Complete
        Duration of loop is 200000 loops so about 20 seconds, maybe
+    7. Implement xon/xoff software flow control
 
 """
 
@@ -24,8 +25,12 @@ password1 = 'trawet07'
 ssid2 = 'StewartNet'
 password2 = 'trawet07'
 
+xonxoff = False
+print("initial value of xonxoff:")
+print(xonxoff)
+
 # default UART configuration (Enshu)
-uart = UART(1, baudrate=9600, bits=7, parity=1, stop=2, tx=16, rx=17, cts=18, rts=19)
+uart = UART(1, baudrate=9600, bits=7, parity=1, stop=2, tx=16, rx=17, cts=18, rts=19, timeout=1000)
 
 """ssid='StewartNet'
 #ssid='stewartnet'
@@ -125,7 +130,12 @@ def start_server():
                 elif data.startswith(b'SEND_FILE'):
                     print("Sending file to CNC serial port")
                     file_name = data[len('SEND_FILE '):].decode()
-                    send_to_serial(file_name)
+                    global xonxoff
+                    print("xonxoff value in server switch")
+                    print(xonxoff)
+                    if xonxoff == True:
+                        send_to_serial_xonxoff(file_name)
+                    else: send_to_serial(file_name)
                     send_status_message(cl, f'File {file_name} sent to CNC')
                 
                 elif data.startswith(b'DELETE_FILE'):
@@ -166,7 +176,13 @@ def start_server():
                         stopbits = int(parts[4])
                         flowcontrol = ' '.join(parts[5:])  # Join the remaining parts into a single string
                         print(port, baudrate, parity, databits, stopbits, flowcontrol)
-                        
+                        if 'xonxoff' in flowcontrol:
+                            xonxoff = True
+                        else:
+                            xonxoff=False
+                        print("xonxoff value in setup uart")
+                        print(xonxoff)
+
                         # Define parity values directly
                         parity_map = {'N': 0, 'E': 1, 'O': 2}  # Assuming 0=None, 1=Even, 2=Odd
                         if parity not in parity_map:
@@ -209,13 +225,15 @@ def start_server():
 
 def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
     global uart
-
+    print("xonxoff value in uart_setup")
+    print(xonxoff)
     # Map flow control strings to UART constants
     flowcontrol_map = {
         'None': 0,
         'UART.RTS': UART.RTS,
         'UART.CTS': UART.CTS,
         'UART.RTS | UART.CTS': UART.RTS | UART.CTS,
+        'xonxoff': 0  # 0x100 is the constant for software flow control
     }
     print(parity)
     # Map parity strings to UART constants
@@ -228,7 +246,7 @@ def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
     # Validate parity
     #if parity not in parity_map:
         #raise ValueError(f"Invalid parity value: {parity}")
-
+ 
     # Print the parameters for debugging
     print(f" Settings going int uart def - port: {port}, baudrate: {baudrate}, parity: {parity}, databits: {databits},stopbits: {stopbits}, flowcontrol: {flowcontrol}")
 
@@ -256,59 +274,87 @@ def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
 
     return uart
 
-def send_to_serial(file_name):
+def send_to_serial(file_name, timeout=10):  # Timeout in seconds
+    print("Executing the send_to_serial function")
     global uart
+    if uart is None:
+        print("UART is not configured. Please call uart_setup first.")
+        return
+    print("Start time about to be called")
+
+    start_time = time.time()  # Record the start time
+    print("Start time:", start_time)
 
     try:
-        # Check if the file exists
-        if file_name not in uos.listdir():
-            raise FileNotFoundError(f"File {file_name} does not exist.")
-        
-        # Open the file in binary read mode
         with open(file_name, 'rb') as file:
             while True:
+                # Check if timeout has been exceeded
+                elapsed_time = time.time() - start_time
+                print(time.time(), start_time)
+                print("Elapsed time:", elapsed_time)
+                if elapsed_time > timeout:
+                    #time.sleep(.01)
+                    print("send_to_serial - Timeout exceeded")
+                    break
+
                 # Read a chunk of the file
                 chunk = file.read(1024)
+                print(chunk)
+                #print('\n')
                 if not chunk:
+                    print("past timeout check")
                     break
+
                 # Send the chunk to the serial port
                 uart.write(chunk)
+                print("Sent chunk of size:", len(chunk))
     except Exception as e:
         print("send_to_serial - Error:", e)
 
-'''
-def send_to_serial(file_name): #with xon/xoff <--- this is the one that works
-    print("Executing the send_to_serial function")
-    global uart
+
+def send_to_serial_xonxoff(file_name, timeout=10):  # Timeout in seconds
+    print("Executing the send_to_serial_xonxoff function")
+    global uart  # may need to adjust this for software flow control
     if uart is None:
         print("UART is not configured. Please call uart_setup first.")
         return
     XON = 0x11
     XOFF = 0x13
     flow_control = True
+    print("calling time function")
+
+    start_time = time.time()  # Record the start time
 
     try:
+        print(time.time()-start_time)
         with open(file_name, 'rb') as f:
             # Prepend the XON character
             uart.write(bytes([XON]))
-            while True:
-                chunk = f.read(1024)
-                if not chunk:
-                    break
-                for byte in chunk:
-                    while not flow_control:
-                        if uart.any():
-                            control_char = uart.read(1)
-                            if control_char == bytes([XOFF]):
-                                flow_control = False
-                            elif control_char == bytes([XON]):
-                                flow_control = True
-                        time.sleep(0.01)  # Small delay to prevent busy waiting
-                    uart.write(bytes([byte]))
-        print(f'File {file_name} sent to serial device')
+        while True:
+            chunk = f.read(1024)  # Read a chunk of the file
+            if not chunk:
+                break
+            for char in chunk:
+                while not flow_control:
+                    print(time.time() - start_time)
+                    if uart.any():
+                        control_char = uart.read(1)
+                        if control_char == bytes([XOFF]):
+                            flow_control = False
+                        elif control_char == bytes([XON]):
+                            flow_control = True
+                    # Check for timeout
+                    if time.time() - start_time > timeout:
+                        print("Timeout: Receiver did not respond in time.")
+                        return
+                    print(time.time() - start_time)
+                    time.sleep(0.01)  # Small delay to prevent busy waiting
+                uart.write(char.encode())  # Write the character to the UART
+                print(f"Sent char: {char}")
+                print(f'File {file_name} sent to serial device')
     except OSError as e:
         print(f"Error sending file {file_name}: {e}")
-'''
+
 
 def receive_from_serial(file_name):
     global uart
