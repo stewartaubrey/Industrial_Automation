@@ -224,7 +224,7 @@ def update_file_list():
 
 # Create the main window
 root = tk.Tk()
-root.title("Send_V9 GUI")
+root.title("Stewart Machine Graphic User Interface")
 
 # Load the image using PIL and scale it by half
 # since this image is hard coded to my home computer the program crashes

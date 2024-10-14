@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stewart Machine Graphic User Interface</title>
+</head>
+<body>
+    <h1>Stewart Machine Graphic User Interface</h1>
+    <button onclick="updateFileList()">Update File List</button>
+    <select id="fileList"></select>
+    <button onclick="sendFile()">Send File</button>
+    <button onclick="deleteFile()">Delete File</button>
+
+    <script>
+        function updateFileList() {
+            fetch('/update_file_list')
+                .then(response => response.json())
+                .then(files => {
+                    const fileList = document.getElementById('fileList');
+                    fileList.innerHTML = '';
+                    files.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = file;
+                        option.textContent = file;
+                        fileList.appendChild(option);
+                    });
+                });
+        }
+
+        function sendFile() {
+            const filePath = document.getElementById('fileList').value;
+            fetch('/send_file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `file_path=${filePath}`
+            });
+        }
+
+        function deleteFile() {
+            const fileName = document.getElementById('fileList').value;
+            fetch('/delete_file', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `file_name=${fileName}`
+            });
+        }
+    </script>
+</body>
+</html>
