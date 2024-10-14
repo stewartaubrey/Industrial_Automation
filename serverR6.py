@@ -329,7 +329,7 @@ def send_to_serial_xonxoff(file_name, timeout=10):  # Timeout in seconds
         print(time.time()-start_time)
         with open(file_name, 'rb') as f:
             # Prepend the XON character
-            uart.write(bytes([XON]))
+            uart.write(bytes([XON])) # Send the XON character to the CNC machine as hex
         while True:
             chunk = f.read(1024)  # Read a chunk of the file
             if not chunk:
@@ -349,7 +349,7 @@ def send_to_serial_xonxoff(file_name, timeout=10):  # Timeout in seconds
                         return
                     print(time.time() - start_time)
                     time.sleep(0.01)  # Small delay to prevent busy waiting
-                uart.write(char.encode())  # Write the character to the UART
+                uart.write(char.encode())  # Write the rest of the file to the UART in ascii
                 print(f"Sent char: {char}")
                 print(f'File {file_name} sent to serial device')
     except OSError as e:
