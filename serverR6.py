@@ -30,6 +30,7 @@ import socket
 import time
 from machine import UART, reset 
 import uos
+import urequests  # Add this import
 
 ssid1 = 'StewartNet'
 password1 = 'trawet07'
@@ -47,11 +48,16 @@ uart = UART(1, baudrate=9600, bits=7, parity=1, stop=2, tx=16, rx=17, cts=18, rt
 #ssid='stewartnet'
 password='trawet07'
 uart = None"""
-
 def send_status_message(client, message):
     try:
         client.sendall(f'Server Msg: {message}'.encode())
+        # Send message to app.py
+        url = 'http://<app_ip>:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
+        payload = {'message': message}
+        response = urequests.post(url, json=payload)
+        response.close()
     except OSError as e:
+        print(f"Error sending message: {e}")
         print(f"Error sending status message: {e}")
 
 

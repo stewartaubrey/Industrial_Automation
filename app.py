@@ -12,13 +12,16 @@ Planned changes and status:
 6. Add all other relevant commands to the index.html code to duplicate the functionality of the client . - Not started
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 import socket
+import threading
 
 app = Flask(__name__)
 
 ESP32_IP = '192.168.1.120'  # Replace with the actual IP address of your ESP32
 ESP32_PORT = 8080
+
+clients = []
 
 @app.route('/')
 def index():
@@ -27,24 +30,50 @@ def index():
 @app.route('/update_file_list', methods=['GET'])
 def update_file_list():
     files = send_command_to_esp32('LIST_FILES')
+    send_status_message('File list updated')
     return jsonify(files)
 
 @app.route('/send_file', methods=['POST'])
 def send_file():
     file_path = request.form['file_path']
     send_command_to_esp32(f'SEND_FILE {file_path}')
+    send_status_message(f'File {file_path} sent')
     return 'File sent'
 
 @app.route('/delete_file', methods=['POST'])
 def delete_file():
     file_name = request.form['file_name']
     send_command_to_esp32(f'DELETE_FILE {file_name}')
+    send_status_message(f'File {file_name} deleted')
     return 'File deleted'
+
+@app.route('/status', methods=['POST'])
+def status():
+    message = request.form['message']
+    return Response(f'data: {message}\n\n', mimetype='text/event-stream')
+
+@app.route('/receive_message', methods=['POST'])
+def receive_message():
+    message = request.json.get('message')
+    send_status_message(message)
+    return 'Message received', 200
+
+@app.route('/events')
+def events():
+    def event_stream():
+        while True:
+            if clients:
+                message = clients.pop(0)
+                yield f'data: {message}\n\n'
+    return Response(event_stream(), mimetype='text/event-stream')
 
 def send_command_to_esp32(command):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((ESP32_IP, ESP32_PORT))
         s.sendall(command.encode())
 
+def send_status_message(message):
+    clients.append(message)
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=5000)

@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>ESP32 Control</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stewart Machine Graphic User Interface</title>
 </head>
 <body>
-    <h1>Stewart Machine Graphic User Interface</h1>
+    <h1>ESP32 Control</h1>
+    <div id="status-box" style="border: 1px solid black; padding: 10px; width: 300px; height: 100px; overflow-y: scroll;">
+        <p id="status-messages"></p>
+    </div>
     <button onclick="updateFileList()">Update File List</button>
     <select id="fileList"></select>
     <button onclick="sendFile()">Send File</button>
@@ -49,6 +52,23 @@
                 body: `file_name=${fileName}`
             });
         }
+
+        function updateStatus(message) {
+            const statusBox = document.getElementById('status-messages');
+            statusBox.innerHTML += message + '<br>';
+        }
+
+        if (!!window.EventSource) {
+            const source = new EventSource('/events');
+            source.onmessage = function(event) {
+                updateStatus(event.data);
+            };
+        } else {
+            console.error("Your browser does not support Server-Sent Events.");
+        }
+
+        // Example of how to use updateStatus function
+        updateStatus('Server started');
     </script>
 </body>
 </html>
