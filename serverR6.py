@@ -22,6 +22,7 @@
     16. Add a function to send a file to the CNC machine with hardware flow control - Complete
     17. Add a function to receive data from the CNC machine with software flow control - Complete
     18. Add a function to receive data from the CNC machine with hardware flow control - Complete
+    19. Adding any necessary changes to work with html and flask - None needed yet
 """
 
 import network

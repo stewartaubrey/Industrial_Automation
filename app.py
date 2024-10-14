@@ -1,11 +1,10 @@
 from flask import Flask, render_template, request, jsonify
 import socket
-import os
 
 app = Flask(__name__)
 
-HOST = "default_host"
-PORT = "default_port"
+ESP32_IP = '192.168.1.120'  # Replace with the actual IP address of your ESP32
+ESP32_PORT = 8080
 
 @app.route('/')
 def index():
@@ -13,32 +12,27 @@ def index():
 
 @app.route('/update_file_list', methods=['GET'])
 def update_file_list():
-    files = list_files_on_esp32()
+    files = send_command_to_esp32('LIST_FILES')
     return jsonify(files)
 
 @app.route('/send_file', methods=['POST'])
 def send_file():
     file_path = request.form['file_path']
-    send_file_to_server(file_path, HOST, PORT)
+    send_command_to_esp32(f'SEND_FILE {file_path}')
     return 'File sent'
 
 @app.route('/delete_file', methods=['POST'])
 def delete_file():
     file_name = request.form['file_name']
-    delete_selected_file(file_name)
+    send_command_to_esp32(f'DELETE_FILE {file_name}')
     return 'File deleted'
 
-def list_files_on_esp32():
-    # Implement the logic to list files on ESP32
-    return ["file1.txt", "file2.txt"]
-
-def send_file_to_server(file_path, host, port):
-    # Implement the logic to send file to server
-    pass
-
-def delete_selected_file(file_name):
-    # Implement the logic to delete file on ESP32
-    pass
+def send_command_to_esp32(command):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((ESP32_IP, ESP32_PORT))
+        s.sendall(command.encode())
+        response = s.recv(4096).decode()
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)
