@@ -1,0 +1,5 @@
+1. launch server using Thonny
+2. launch app.py using terminal in vscode
+	command: python app.py or F5
+3. create a second split terminal and launch client
+	command: python clientR#.py

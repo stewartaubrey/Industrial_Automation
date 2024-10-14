@@ -1,3 +1,18 @@
+"""
+General: This content works but functionality is limited.
+Need to now begin to add commands that call the functionality of the server.
+See startup sequence text file in directory for more information.
+
+Planned changes and status:
+1. Add status box to the index.html page to display the status of the server. - Not started
+2. Add pull down menu to the index.html page to select the file to be send to the ESP32. - Not started
+3. Add pull down menu to the index.html page to select the file to be deleted from the ESP32. - Not started
+4. Add pull down menu to the index.html page to select the machine being used. - Not started
+5. Add all other relevant commands to the index.html code to duplicate the functionality of the client . - Not started
+"""
+
+
+
 from flask import Flask, render_template, request, jsonify
 import socket
 
