@@ -1,5 +1,8 @@
 1. launch server using Thonny
 2. launch app.py using terminal in vscode
-	command: python app.py or F5
-3. create a second split terminal and launch client
-	command: python clientR#.py
+	- command: python app.py or F5
+	- access html interface at 127.0.0.1:500
+	  Use any browser including phone that is on same LAN
+3. create a second split terminal and launch client in vscode
+	- command: python clientR#.py in the new terminal or F5
+	- Note: only one program can be started with F5 is seems
