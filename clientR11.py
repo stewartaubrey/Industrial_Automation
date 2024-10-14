@@ -8,11 +8,22 @@ basic functionality such as:
 Send to remote interface (ESP32)
 Receive file listing from remote interface
 Commands to serially transmit selected files to CNC machine connected to remote interface.
+Changes before this revision:
+1. Added a combobox to select machine from predefined list of machines.
+2. Added a function to update HOST and PORT values based on the selected machine.
+3. Added a function to send UART setup details to the remote interface.
+4. Added a function to send a message to the remote interface.
+5. Added a function to update the status box.
+6. Added a function to send UART setup details to the remote interface.
+7. Added a function to send a message to the remote interface.
+8. Added a function to update the status box. 
 
-Modifications planned for Revision 10:
+
+Changes this revision
 1. Change the way the HOST and PORT values are set depending on the machine selected. - Complete, partially tested
-2. Send the method of flow control to be used ESP32 depending on the machine selected. - Not started
-   a. Will need a way to set the flow control method on the ESP32 side. - Not started
+2. Send the method of flow control to be used ESP32 depending on the machine selected. - Complete, partially tested
+   a. Will need a way to set the flow control method on the ESP32 side. - Complete, partially tested
+3. Added fail over method to load image if first path fails. - Complete, partially tested
 """
 
 import tkinter as tk
