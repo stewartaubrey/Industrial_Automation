@@ -219,17 +219,29 @@ root.title("Send_V9 GUI")
 # since this image is hard coded to my home computer the program crashes
 # if I run it from another location, need to address
 
+image_path_1 = "C:/Users/stewa/Documents/StewartMachine/Industrial Automation/SMLogo.png"
+image_path_2 = "C:/Users/stewa/Pictures/SMLogo.png"
 
-#pil_image = Image.open("C:/Users/stewa/Pictures/SMLogo.png")
-pil_image = Image.open("C:/Users/stewa/Documents/StewartMachine/Industrial Automation/SMLogo.png")
-width, height = pil_image.size
-scaled_image = pil_image.resize((width // 2, height // 2), Image.LANCZOS)
-image = ImageTk.PhotoImage(scaled_image)
+image_loaded = False
 
+try:
+    pil_image = Image.open(image_path_1)
+    image_loaded = True
+except FileNotFoundError:
+    try:
+        pil_image = Image.open(image_path_2)
+        image_loaded = True
+    except FileNotFoundError:
+        print("Both image paths are invalid. Skipping image loading.")
 
-# Create a label to display the image
-image_label = tk.Label(root, image=image)
-image_label.grid(row=0, column=0, columnspan=2)
+if image_loaded:
+    width, height = pil_image.size
+    scaled_image = pil_image.resize((width // 3, height // 3), Image.LANCZOS)
+    image = ImageTk.PhotoImage(scaled_image)
+
+    # Create a label to display the image
+    image_label = tk.Label(root, image=image)
+    image_label.grid(row=0, column=0, columnspan=2)
 
 # Add buttons and other GUI components
 send_button = tk.Button(root, text="Upload New File to ESP32", command=select_and_send_file)

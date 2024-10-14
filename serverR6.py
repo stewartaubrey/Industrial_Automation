@@ -10,8 +10,18 @@
         Changed the send_to_serial function prepend the XON character to the file data before sending it to the CNC machine.
     6. Added timeout to receive_from_serial function to prevent infinite loop if no data is received - Complete
        Duration of loop is 200000 loops so about 20 seconds, maybe
-    7. Implement xon/xoff software flow control
-
+    7. Implement xon/xoff software flow control - Complete but not tested at shop
+    8. Added ability to try a second SSID if the first one fails - Complete
+    9. Add a function to clear all files on the ESP32 - Complete
+    10. Add a function to list all files on the ESP32 - Complete
+    11. Add a function to delete a specified file on the ESP32 - Complete
+    12. Add a function to send a specified file to the client - Complete
+    13. Add a function to receive a file from the client - Complete
+    14. Add a function to reboot the ESP32 - Complete
+    15. Add a function to send a file to the CNC machine with software flow control - Complete
+    16. Add a function to send a file to the CNC machine with hardware flow control - Complete
+    17. Add a function to receive data from the CNC machine with software flow control - Complete
+    18. Add a function to receive data from the CNC machine with hardware flow control - Complete
 """
 
 import network
@@ -30,7 +40,7 @@ print("initial value of xonxoff:")
 print(xonxoff)
 
 # default UART configuration (Enshu)
-uart = UART(1, baudrate=9600, bits=7, parity=1, stop=2, tx=16, rx=17, cts=18, rts=19, timeout=1000)
+uart = UART(1, baudrate=9600, bits=7, parity=1, stop=2, tx=16, rx=17, cts=18, rts=19) # remove timeout=1000
 
 """ssid='StewartNet'
 #ssid='stewartnet'
