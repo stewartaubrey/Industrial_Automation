@@ -8,10 +8,9 @@ Planned changes and status:
 2. Add pull down menu to the index.html page to select the file to be send to the ESP32. - Not started
 3. Add pull down menu to the index.html page to select the file to be deleted from the ESP32. - Not started
 4. Add pull down menu to the index.html page to select the machine being used. - Not started
-5. Add all other relevant commands to the index.html code to duplicate the functionality of the client . - Not started
+5. Changed app.py to also bind to the LAN IP address of the computer hosting it. - Completed
+6. Add all other relevant commands to the index.html code to duplicate the functionality of the client . - Not started
 """
-
-
 
 from flask import Flask, render_template, request, jsonify
 import socket
@@ -46,8 +45,6 @@ def send_command_to_esp32(command):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((ESP32_IP, ESP32_PORT))
         s.sendall(command.encode())
-        response = s.recv(4096).decode()
-    return response
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
