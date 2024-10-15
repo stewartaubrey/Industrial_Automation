@@ -52,7 +52,7 @@ def send_status_message(client, message):
     try:
         client.sendall(f'Server Msg: {message}'.encode())
         # Send message to app.py
-        url = 'http://<app_ip>:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
+        url = 'http://192.168.1.109:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
         payload = {'message': message}
         response = urequests.post(url, json=payload)
         response.close()

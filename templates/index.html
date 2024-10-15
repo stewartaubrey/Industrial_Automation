@@ -2,13 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ESP32 Control</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Box</title>
+    <style>
+        .status-container {
+            border: 1px solid #000;
+            padding: 10px;
+            width: 300px;
+            height: 250px;
+            overflow-y: scroll;
+        }
+        .status-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        #status-box {
+            height: 200px;
+        }
+    </style>
 </head>
 <body>
     <h1>ESP32 Control</h1>
-    <div id="status-box" style="border: 1px solid black; padding: 10px; width: 300px; height: 100px; overflow-y: scroll;">
-        <p id="status-messages"></p>
+    <div class="status-container">
+        <div class="status-title">Status</div>
+        <div id="status-box">
+            <!-- Status messages will be appended here -->
+        </div>
     </div>
     <button onclick="updateFileList()">Update File List</button>
     <select id="fileList"></select>
@@ -54,8 +73,10 @@
         }
 
         function updateStatus(message) {
-            const statusBox = document.getElementById('status-messages');
-            statusBox.innerHTML += message + '<br>';
+            const statusBox = document.getElementById('status-box');
+            const newMessage = document.createElement('div');
+            newMessage.textContent = message;
+            statusBox.insertBefore(newMessage, statusBox.firstChild); // Prepend new message
         }
 
         if (!!window.EventSource) {

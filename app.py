@@ -47,11 +47,6 @@ def delete_file():
     send_status_message(f'File {file_name} deleted')
     return 'File deleted'
 
-@app.route('/status', methods=['POST'])
-def status():
-    message = request.form['message']
-    return Response(f'data: {message}\n\n', mimetype='text/event-stream')
-
 @app.route('/receive_message', methods=['POST'])
 def receive_message():
     message = request.json.get('message')
@@ -76,4 +71,4 @@ def send_status_message(message):
     clients.append(message)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='192.168.1.109', port=5000)
