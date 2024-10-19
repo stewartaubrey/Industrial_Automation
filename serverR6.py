@@ -63,7 +63,8 @@ def send_status_message(client, message):
 
 def connect_wifi(ssid1, password1, ssid2, password2):
     wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
+    wlan.disconnect()
+    #wlan.active(True)
     # Set static IP address
     #ip = '192.168.1.120'
     #subnet = '255.255.255.0'
@@ -80,7 +81,7 @@ def connect_wifi(ssid1, password1, ssid2, password2):
                 print("before wlan")
                 if not wlan.isconnected():
                     print("Not connected to a network.")
-                    wlan.connect(ssid, password)
+                    #wlan.connect(ssid, password)
                 else:
                     print("Already connected to a network.")
                 #wlan.connect(ssid, password)
