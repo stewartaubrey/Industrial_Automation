@@ -3,7 +3,7 @@ import socket
 import time
 
 # WiFi credentials
-SSID = "San Pietro all’Orto 6-P.3"
+SSID = "San Pietro all’Orto 6-P.2"
 PASSWORD = 'wearehappy'
 #SSID = "stewa's iPhone"
 #PASSWORD = 'trawet07'
@@ -27,10 +27,15 @@ while not wlan.isconnected():
 ip = wlan.ifconfig()[0]
 port = wlan.ifconfig()[2]
 
-# Print host and port
-host = ip
-#port = 80
-print(f"Host: {host}, Port: {port}")
+# Print WiFi connection info
+ip, subnet, gateway, dns = wlan.ifconfig()
+port = 80
+print(f"Connected to WiFi network {SSID}")
+print(f"IP Address: {ip}")
+print(f"Subnet Mask: {subnet}")
+print(f"Gateway: {gateway}")
+print(f"DNS: {dns}")
+print(f"Port: {port}")
 
 # Close the connection
 wlan.disconnect()
