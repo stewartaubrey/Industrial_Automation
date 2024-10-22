@@ -32,7 +32,7 @@ from machine import UART, reset
 import uos
 import urequests  # Add this import
 
-ssid1 = "San Pietro all’Orto 6-P.3"
+ssid1 = "San Pietro all’Orto 6-P.2"
 password1 = 'wearehappy'
 ssid2 = 'StewartNet'
 password2 = 'trawet07'
@@ -107,35 +107,17 @@ def connect_wifi(ssid1, password1, ssid2, password2):
     # Try to connect to the first SSID
     if try_connect(ssid1, password1):
         print(f'Connected to {ssid1}')
-        # Print WiFi connection info
-        ip, subnet, gateway, dns = wlan.ifconfig()
-        port = 80
-        print(f"Connected to WiFi network {ssid1}")
-        print(f"IP Address: {ip}")
-        print(f"Subnet Mask: {subnet}")
-        print(f"Gateway: {gateway}")
-        print(f"DNS: {dns}")
-        print(f"Port: {port}")
     else:
         print(f'Failed to connect to {ssid1}, trying {ssid2}')
         # Try to connect to the second SSID
         if try_connect(ssid2, password2):
             print(f'Connected to {ssid2}')
-            # Print WiFi connection info
-            ip, subnet, gateway, dns = wlan.ifconfig()
-            port = 80
-            print(f"Connected to WiFi network {ssid2}")
-            print(f"IP Address: {ip}")
-            print(f"Subnet Mask: {subnet}")
-            print(f"Gateway: {gateway}")
-            print(f"DNS: {dns}")
-            print(f"Port: {port}")
         else:
             print(f'Failed to connect to {ssid2}')
             # Optionally, you can reset the device or handle the failure as needed
             print('Failed to connect to any network, resetting...')
             #reset()
-    #send_status_message(client,'Network connected!')
+    #send_status_message(client,'Network conneted!')
     #send_status_message(cl,'IP address' + wlan.ifconfig()[0])
 
 
