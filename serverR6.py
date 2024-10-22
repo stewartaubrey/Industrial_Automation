@@ -32,8 +32,8 @@ from machine import UART, reset
 import uos
 import urequests  # Add this import
 
-ssid1 = "San Pietro all’Orto 6-P.2"
-password1 = 'wearehappy'
+ssid1 = "BorgoPio138"
+password1 = 'buongiorno'
 ssid2 = 'StewartNet'
 password2 = 'trawet07'
 
