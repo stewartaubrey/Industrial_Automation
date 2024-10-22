@@ -50,7 +50,6 @@ password='trawet07'
 uart = None"""
 def send_status_message(client, message):
     try:
-        client.send(f'Server Msg: {message}'.encode())
         client.sendall(f'Server Msg: {message}'.encode())
         # Send message to app.py
         url = 'http://192.168.1.109:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
@@ -64,7 +63,7 @@ def send_status_message(client, message):
 
 def connect_wifi(ssid1, password1, ssid2, password2):
     wlan = network.WLAN(network.STA_IF)
-    wlan.disconnect()
+    #wlan.disconnect()
     wlan.active(False)
     wlan.active(True)
     # Set static IP address
@@ -110,13 +109,13 @@ def connect_wifi(ssid1, password1, ssid2, password2):
         print(f'Connected to {ssid1}')
         # Print WiFi connection info
         ip, subnet, gateway, dns = wlan.ifconfig()
-        #port = 8080
+        port = 80
         print(f"Connected to WiFi network {ssid1}")
         print(f"IP Address: {ip}")
         print(f"Subnet Mask: {subnet}")
         print(f"Gateway: {gateway}")
         print(f"DNS: {dns}")
-        #print(f"Port: {port}")
+        print(f"Port: {port}")
     else:
         print(f'Failed to connect to {ssid1}, trying {ssid2}')
         # Try to connect to the second SSID
@@ -124,7 +123,7 @@ def connect_wifi(ssid1, password1, ssid2, password2):
             print(f'Connected to {ssid2}')
             # Print WiFi connection info
             ip, subnet, gateway, dns = wlan.ifconfig()
-            port = 8080
+            port = 80
             print(f"Connected to WiFi network {ssid2}")
             print(f"IP Address: {ip}")
             print(f"Subnet Mask: {subnet}")
@@ -164,7 +163,6 @@ def start_server():
                 elif data == b'LIST_FILES':
                     print("lists files")
                     list_files(cl)
-                    client.send(cl,'File list sent - als')
                     send_status_message(cl, 'File list sent to client')
                 
                 elif data.startswith(b'SEND_FILE'):
