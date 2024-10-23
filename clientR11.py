@@ -34,15 +34,15 @@ import os
 import time
 
 # Define HOST and PORT constants
-HOST = "192.168.1.120"  # Set default host to 192.168.1.120
+HOST = "192.168.1.228"  # Set default host to 192.168.1.120
 PORT = 8080  # Set default port to 8080
 
 # Dictionary to map machine names to their respective HOST and PORT values
 machine_config = {
-    'Enshu': {'HOST': '192.168.1.120', 'PORT': 8080},
-    'Wyatt': {'HOST': '192.168.1.120', 'PORT': 8080},
-    'Hyundai': {'HOST': '192.168.1.120', 'PORT': 8080},
-    'Frenchy': {'HOST': '192.168.1.120', 'PORT': 8080}
+    'Enshu': {'HOST': '192.168.1.233', 'PORT': 8080},
+    'Wyatt': {'HOST': '192.168.1.233', 'PORT': 8080},
+    'Hyundai': {'HOST': '192.168.1.233', 'PORT': 8080},
+    'Frenchy': {'HOST': '192.168.1.233', 'PORT': 8080}
 }
 
 # Debug print statement
