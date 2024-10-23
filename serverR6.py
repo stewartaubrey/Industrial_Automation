@@ -56,14 +56,13 @@ def send_status_message(client, message):
         client.send(f'Server Msg: {message}'.encode())
         client.sendall(f'Server Msg: {message}'.encode())
         # Send message to app.py
-        url = 'http://192.168.178.226:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
+        url = 'http://192.168.21.226:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
         payload = {'message': message}
         response = urequests.post(url, json=payload)
         response.close()
     except OSError as e:
         print(f"Error sending message: {e}")
         print(f"Error sending status message: {e}")
-
 
 
 def connect_wifi(ssid1, password1, ssid2, password2):
@@ -141,7 +140,7 @@ def connect_wifi(ssid1, password1, ssid2, password2):
             print('Failed to connect to any network, resetting...')
             #reset()
     #send_status_message(client,'Network connected!')
-    #send_status_message(client,'IP address' + wlan.ifconfig()[0])
+    #send_status_message(cl,'IP address' + wlan.ifconfig()[0])
 
 
     
@@ -156,20 +155,20 @@ def start_server():
         while True:
             time.sleep(.1)
             try:
-                client, addr = s.accept()  # Accepting client connections here
+                cl, addr = s.accept()  # Accepting client connections here
                 print('Client connected from', addr)
-                data = client.recv(1024)
+                data = cl.recv(1024)
                 
                 if data == b'CLEAR_FILES':
                     print("clearing files")
                     clear_files()
-                    send_status_message(client, 'All User files cleared on ESP32')
+                    send_status_message(cl, 'All User files cleared on ESP32')
                 
                 elif data == b'LIST_FILES':
                     print("lists files")
-                    list_files(client)
-                    client.send(client,'File list sent - als')
-                    send_status_message(client, 'File list sent to client')
+                    list_files(cl)
+                    client.send(cl,'File list sent - als')
+                    send_status_message(cl, 'File list sent to client')
                 
                 elif data.startswith(b'SEND_FILE'):
                     print("Sending file to CNC serial port")
@@ -180,29 +179,29 @@ def start_server():
                     if xonxoff == True:
                         send_to_serial_xonxoff(file_name)
                     else: send_to_serial(file_name)
-                    send_status_message(client, f'File {file_name} sent to CNC')
+                    send_status_message(cl, f'File {file_name} sent to CNC')
                 
                 elif data.startswith(b'DELETE_FILE'):
                     print("Deleted file: " + file_name)
                     file_name = data[len('DELETE_FILE '):].decode()
                     delete_file(file_name)
-                    send_status_message(client, f'File {file_name} deleted from ESP32')
+                    send_status_message(cl, f'File {file_name} deleted from ESP32')
 
                 elif data.startswith(b'RECEIVE_FILE'):
                     print("Sending " + file_name + " to CNC")
                     file_name = data[len('RECEIVE_FILE '):].decode()
-                    send_file_to_client(client, file_name)
-                    send_status_message(client, f'File {file_name} sent to client')
+                    send_file_to_client(cl, file_name)
+                    send_status_message(cl, f'File {file_name} sent to client')
 
                 elif data == b'REBOOT':
-                    send_status_message(client, 'Reboot command received, \n            see you on the other side!')
-                    client.close()
+                    send_status_message(cl, 'Reboot command received, \n            see you on the other side!')
+                    cl.close()
                     print('Reboot command received')
                     time.sleep(1)
                     reset()  # Reboot the ESP32
                 elif data == b'RECEIVE_SERIAL':
                     receive_from_serial('serial_data.txt')  # Save serial data to 'serial_data.txt'
-                    send_status_message(client, 'Serial data received and saved as serial_data.txt')
+                    send_status_message(cl, 'Serial data received and saved as serial_data.txt')
 
                 elif data.startswith(b'SETUP_UART'):
                     try:
@@ -235,11 +234,11 @@ def start_server():
                         uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol)
                         print(baudrate)
                         uart_status = (f'\nCNC serial comms configured to: \nbaudrate={baudrate}\nparity={parity}\ndatabits={databits}\nstopbits={stopbits}\nflow={flowcontrol}\nport={port}\n')
-                        send_status_message(client, uart_status)
+                        send_status_message(cl, uart_status)
                         print("Status message sent")
                     except ValueError as e:
                         print(f"Error in UART setup: {e}")
-                        send_status_message(client, f"UART setup failed: {e}")
+                        send_status_message(cl, f"UART setup failed: {e}")
 
                 else:
                     print("else statement")
@@ -250,12 +249,12 @@ def start_server():
                     with open(file_path, 'wb') as f:
                         f.write(file_data)
                         while True:
-                            data = client.recv(1024)
+                            data = cl.recv(1024)
                             if not data:
                                 break
                             f.write(data)
-                    send_status_message(client, f'File {file_name} received and saved to {file_path}')
-                    client.close()
+                    send_status_message(cl, f'File {file_name} received and saved to {file_path}')
+                    cl.close()
                     print(f'File {file_name} received and saved to {file_path}')
             except OSError as e:
                 if e.args[0] == 116:  # ETIMEDOUT error code
@@ -263,7 +262,7 @@ def start_server():
                 else:
                     print(f"start_server generic OSError - Error: {e}")
             finally:
-                client.close()  # Ensure the client connection is closed. This is important! Otherwise, the server will hang als 
+                cl.close()  # Ensure the client connection is closed. This is important! Otherwise, the server will hang als 
     finally:
         s.close()
 
