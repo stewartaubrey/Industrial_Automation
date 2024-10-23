@@ -32,8 +32,8 @@ from machine import UART, reset
 import uos
 import urequests  # Add this import
 
-ssid1 = 'StewartNet'
-password1 = 'trawet07'
+ssid1 = 'BorgoPio138'
+password1 = 'buongornio'
 ssid2 = 'StewartNet'
 password2 = 'trawet07'
 
@@ -48,16 +48,16 @@ uart = UART(1, baudrate=9600, bits=7, parity=1, stop=2, tx=16, rx=17, cts=18, rt
 #ssid='stewartnet'
 password='trawet07'
 uart = None"""
-def send_status_message(client, message):
+def send_status_message(cl, message):
     try:
-        client.sendall(f'Server Msg: {message}'.encode())
+        cl.sendall(f'Server Msg: {message}'.encode())
         # Send message to app.py
-        url = 'http://192.168.1.109:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
-        payload = {'message': message}
-        response = urequests.post(url, json=payload)
-        response.close()
+        #url = 'http://192.168.1.109:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
+        #payload = {'message': message}
+        #response = urequests.post(url, json=payload)
+        #response.close()
     except OSError as e:
-        print(f"Error sending message: {e}")
+        #print(f"Error sending message: {e}")
         print(f"Error sending status message: {e}")
 
 
@@ -65,7 +65,7 @@ def connect_wifi(ssid1, password1, ssid2, password2):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     # Set static IP address
-    ip = '192.168.1.120'
+    ip = '192.168.178.227'
     subnet = '255.255.255.0'
     gateway = '192.168.1.1'
     dns = '8.8.8.8'
