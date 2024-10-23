@@ -71,10 +71,10 @@ def connect_wifi(ssid1, password1, ssid2, password2):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     # Set static IP address
-    ip = '192.168.178.227'
-    subnet = '255.255.255.0'
-    gateway = '192.168.1.1'
-    dns = '8.8.8.8'
+    #ip = '192.168.178.227'
+    #subnet = '255.255.255.0'
+    #gateway = '192.168.1.1'
+    #dns = '8.8.8.8'
     #wlan.ifconfig((ip, subnet, gateway, dns))
     print('Dyn assigned IP address:', wlan.ifconfig()[0])
 
@@ -140,7 +140,7 @@ def start_server():
                 cl, addr = s.accept()  # Accepting client connections here
                 print('Client connected from', addr)
                 data = cl.recv(1024)
-                
+                send_status_message(cl, "test message 42")
                 if data == b'CLEAR_FILES': #send status message works
                     print("clearing files")
                     clear_files()
@@ -235,10 +235,13 @@ def start_server():
                         f.write(file_data)
                         while True:
                             data = cl.recv(1024)
+                            #send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
+                            send_status_message(cl, "test message 42")
                             if not data:
+                                #send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
                                 break
                             f.write(data)
-                    send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
+                    #send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
                     cl.close()
                     print(f'File {file_name} received and saved to {file_path} on ESP32')
             except OSError as e:
