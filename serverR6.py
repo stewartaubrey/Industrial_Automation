@@ -32,8 +32,8 @@ from machine import UART, reset
 import uos
 import urequests  # Add this import
 
-ssid1 = "San Pietro all’Orto 6-P.2"
-password1 = 'wearehappy'
+ssid1 = 'StewartNet'
+password1 = 'trawet07'
 ssid2 = 'StewartNet'
 password2 = 'trawet07'
 
@@ -65,14 +65,13 @@ def connect_wifi(ssid1, password1, ssid2, password2):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     # Set static IP address
-    #ip = '192.168.1.120'
-    #subnet = '255.255.255.0'
-    #gateway = '192.168.1.1'
-    #dns = '8.8.8.8'
-    #wlan.ifconfig((ip, subnet, gateway, dns))
+    ip = '192.168.1.120'
+    subnet = '255.255.255.0'
+    gateway = '192.168.1.1'
+    dns = '8.8.8.8'
+    wlan.ifconfig((ip, subnet, gateway, dns))
 
     def try_connect(ssid, password):
-        #wlan.disconnect()
         print("inside try_connect")
         print(f"Trying to connect to network {ssid}...")
         if not wlan.isconnected():
