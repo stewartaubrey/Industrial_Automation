@@ -32,10 +32,12 @@ from machine import UART, reset
 import uos
 import urequests  # Add this import
 
-ssid1 = 'BorgoPio138'
-password1 = 'buongornio'
-ssid2 = 'StewartNet'
-password2 = 'trawet07'
+ssid2 = 'BorgoPio138'
+password2 = 'buongornio'
+ssid1 = 'Aubrey iPhone'
+password1 = 'trawet07'
+# ssid2 = 'StewartNet'
+# password2 = 'trawet07'
 
 xonxoff = False
 print("initial value of xonxoff:")
