@@ -32,9 +32,12 @@ from machine import UART, reset
 import uos
 import urequests  # Add this import
 
-ssid1 = "San Pietro all’Orto 6-P.3"
-password1 = 'wearehappy'
-ssid2 = 'StewartNet'
+#ssid2 = "San Pietro all’Orto 6-P.3"
+#password2 = 'wearehappy'
+
+ssid1 = "BorgoPio138"
+password1 = 'buongiorno'
+ssid2 = "Aubrey iPhone"
 password2 = 'trawet07'
 
 xonxoff = False
@@ -53,7 +56,7 @@ def send_status_message(client, message):
         client.send(f'Server Msg: {message}'.encode())
         client.sendall(f'Server Msg: {message}'.encode())
         # Send message to app.py
-        url = 'http://192.168.1.109:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
+        url = 'http://192.168.21.226:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
         payload = {'message': message}
         response = urequests.post(url, json=payload)
         response.close()
@@ -64,7 +67,7 @@ def send_status_message(client, message):
 
 def connect_wifi(ssid1, password1, ssid2, password2):
     wlan = network.WLAN(network.STA_IF)
-    wlan.disconnect()
+    #wlan.disconnect()
     wlan.active(False)
     wlan.active(True)
     # Set static IP address
@@ -75,7 +78,7 @@ def connect_wifi(ssid1, password1, ssid2, password2):
     #wlan.ifconfig((ip, subnet, gateway, dns))
 
     def try_connect(ssid, password):
-        #wlan.disconnect()
+        wlan.disconnect()
         print("inside try_connect")
         print(f"Trying to connect to network {ssid}...")
         if not wlan.isconnected():
