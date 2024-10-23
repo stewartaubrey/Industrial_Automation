@@ -32,10 +32,10 @@ from machine import UART, reset
 import uos
 import urequests  # Add this import
 
-ssid2 = 'BorgoPio138'
-password2 = 'buongornio'
-ssid1 = 'Aubrey iPhone'
-password1 = 'trawet07'
+ssid1 = 'BorgoPio138'
+password1 = 'buongornio'
+ssid2 = 'Aubrey iPhone'
+password2 = 'trawet07'
 # ssid2 = 'StewartNet'
 # password2 = 'trawet07'
 
@@ -75,7 +75,8 @@ def connect_wifi(ssid1, password1, ssid2, password2):
     subnet = '255.255.255.0'
     gateway = '192.168.1.1'
     dns = '8.8.8.8'
-    wlan.ifconfig((ip, subnet, gateway, dns))
+    #wlan.ifconfig((ip, subnet, gateway, dns))
+    print('Dyn assigned IP address:', wlan.ifconfig()[0])
 
     def try_connect(ssid, password):
         print("inside try_connect")
