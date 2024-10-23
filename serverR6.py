@@ -50,15 +50,19 @@ password='trawet07'
 uart = None"""
 def send_status_message(cl, message):
     try:
-        cl.sendall(f'Server Msg: {message}'.encode())
-        # Send message to app.py
-        #url = 'http://192.168.1.109:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
-        #payload = {'message': message}
-        #response = urequests.post(url, json=payload)
-        #response.close()
+        if cl:
+            print(f"Socket state: {cl}")
+            cl.sendall(f'Server Msg: {message}'.encode())
+        else:
+            print("Socket is not initialized.")
+            # Send message to app.py
+            #url = 'http://192.168.1.109:5000/receive_message'  # Replace <app_ip> with the actual IP address of the machine running app.py
+            #payload = {'message': message}
+            #response = urequests.post(url, json=payload)
+            #response.close()
     except OSError as e:
         #print(f"Error sending message: {e}")
-        print(f"Error sending status message: {e}")
+        print(f"Error sending status messageee: {e}")
 
 
 def connect_wifi(ssid1, password1, ssid2, password2):
@@ -134,12 +138,12 @@ def start_server():
                 print('Client connected from', addr)
                 data = cl.recv(1024)
                 
-                if data == b'CLEAR_FILES':
+                if data == b'CLEAR_FILES': #send status message works
                     print("clearing files")
                     clear_files()
                     send_status_message(cl, 'All User files cleared on ESP32')
                 
-                elif data == b'LIST_FILES':
+                elif data == b'LIST_FILES':   #send status message works
                     print("lists files")
                     list_files(cl)
                     send_status_message(cl, 'File list sent to client')
@@ -155,17 +159,20 @@ def start_server():
                     else: send_to_serial(file_name)
                     send_status_message(cl, f'File {file_name} sent to CNC')
                 
-                elif data.startswith(b'DELETE_FILE'):
+                elif data.startswith(b'DELETE_FILE'):   #send status message works
+                    file_name = data[len('DELETE_FILE '):].decode()
                     print("Deleted file: " + file_name)
                     file_name = data[len('DELETE_FILE '):].decode()
                     delete_file(file_name)
                     send_status_message(cl, f'File {file_name} deleted from ESP32')
+                    cl.close()
 
-                elif data.startswith(b'RECEIVE_FILE'):
-                    print("Sending " + file_name + " to CNC")
+                elif data.startswith(b'RECEIVE_FILE'): #send status message works
                     file_name = data[len('RECEIVE_FILE '):].decode()
+                    print("Sending " + file_name + " to client on PC")
                     send_file_to_client(cl, file_name)
-                    send_status_message(cl, f'File {file_name} sent to client')
+                    send_status_message(cl, f'File {file_name} sent to client on PC')
+                    cl.close()
 
                 elif data == b'REBOOT':
                     send_status_message(cl, 'Reboot command received, \n            see you on the other side!')
@@ -173,6 +180,7 @@ def start_server():
                     print('Reboot command received')
                     time.sleep(1)
                     reset()  # Reboot the ESP32
+                
                 elif data == b'RECEIVE_SERIAL':
                     receive_from_serial('serial_data.txt')  # Save serial data to 'serial_data.txt'
                     send_status_message(cl, 'Serial data received and saved as serial_data.txt')
@@ -214,7 +222,7 @@ def start_server():
                         print(f"Error in UART setup: {e}")
                         send_status_message(cl, f"UART setup failed: {e}")
 
-                else:
+                else: #sends file from client on PC to ESP32
                     print("else statement")
                     file_name, file_data = data.split(b'\n', 1)
                     file_name = file_name.decode()
@@ -227,9 +235,9 @@ def start_server():
                             if not data:
                                 break
                             f.write(data)
-                    send_status_message(cl, f'File {file_name} received and saved to {file_path}')
+                    send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
                     cl.close()
-                    print(f'File {file_name} received and saved to {file_path}')
+                    print(f'File {file_name} received and saved to {file_path} on ESP32')
             except OSError as e:
                 if e.args[0] == 116:  # ETIMEDOUT error code
                     print('Socket timeout, no client connected')
@@ -458,7 +466,7 @@ def send_file_to_client(client, file_name):
                 if not chunk:
                     break
                 client.send(chunk)
-        client.close()
+        #client.close()
         print(f'File {file_name} sent to client')
     except OSError as e:
         print(f"Error sending file {file_name}: {e}")
