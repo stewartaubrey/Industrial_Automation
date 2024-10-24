@@ -66,17 +66,31 @@ def send_status_message(cl, message):
         #print(f"Error sending message: {e}")
         print(f"Error sending status messageee: {e}")
 
+print("Releasing IP address")
+
+def release_wifi_ip():
+    wlan = network.WLAN(network.STA_IF)
+    if wlan.isconnected():
+        print(f"Releasing IP address: {wlan.ifconfig()[0]}")
+        wlan.active(False)  # Deactivate the Wi-Fi interface to release the IP address
+        print("Wi-Fi interface deactivated")
+    else:
+        print("Wi-Fi interface is not connected")
+
+# Call the function to release the Wi-Fi IP address
+release_wifi_ip()
 
 def connect_wifi(ssid1, password1, ssid2, password2):
     wlan = network.WLAN(network.STA_IF)
     print(wlan)
     wlan.active(True)
+    print(wlan)
     # Set static IP address
-    #ip = '192.168.178.227'
-    #subnet = '255.255.255.0'
-    #gateway = '192.168.1.1'
-    #dns = '8.8.8.8'
-    #wlan.ifconfig((ip, subnet, gateway, dns))
+    ip = '192.168.178.227'
+    subnet = '255.255.255.0'
+    gateway = '192.168.1.1'
+    dns = '8.8.8.8'
+    wlan.ifconfig((ip, subnet, gateway, dns))
     #print('Dyn assigned IP address:', wlan.ifconfig()[0])
 
     def try_connect(ssid, password):
@@ -480,5 +494,6 @@ def send_file_to_client(client, file_name):
         print(f"Error sending file {file_name}: {e}")
 
 # Connect to Wi-Fi with the specified credentials
+#release_wifi_ip()
 connect_wifi(ssid1, password1, ssid2, password2)
 start_server()

@@ -35,6 +35,7 @@ import time
 
 # Define HOST and PORT constants
 HOST = "192.168.178.227"  # Set default host to server IP
+#HOST = "0.0.0.0"  # Set default host to server IP
 PORT = 8080  # Set default port to 8080
 
 # Dictionary to map machine names to their respective HOST and PORT values
@@ -46,7 +47,7 @@ machine_config = {
 }
 
 # Debug print statement
-print("machine_config:", machine_config)
+#print("machine_config:", machine_config)
 
 """
 https://docs.micropython.org/en/latest/library/machine.UART.html
@@ -164,12 +165,13 @@ def list_files_on_esp32():
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s = socket.socket()
+            print("HOST is: ", HOST)
             s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
             s.sendall(b'LIST_FILES')
             data = s.recv(4096).decode()
             s.close()
-            #update_status('Files on ESP32:')
-            #update_status(data)
+            update_status('Files on ESP32:')
+            update_status(data)
         return data.split('\n')
     except socket.error as e:
         #update_status(f"Socket error: {e}\n"+ "Server Device Not Found\n" + "Verify ESP32 Powered\nIf ESP32 was powered, wait 1m\nwhile it acquires IP Address from router\nand try again\n")
@@ -215,7 +217,7 @@ def show_message():
 
   
 def update_file_list():
-    files = list_files_on_esp32()
+    files = list_files_on_esp32()  # Calls another function to get the list of files
     files.insert(0, "            Select File")
     file_combobox['values'] = files
     if files:
@@ -336,9 +338,11 @@ def send_message_to_server(message):
         update_status(f"send_message_to_server - Socket error: {e}")
 
 # Initial update of the file list
+print("initial update of file list")
 update_file_list()
 
 # Ensure HOST and PORT are updated before any socket connection attempts
+print("initial update of host & port")
 update_host_port()
 
 # Bind the update_host_port function to the <<ComboboxSelected>> event

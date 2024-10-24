@@ -1,12 +1,6 @@
 import network
 import time
 
-# Define the SSID and password for the Wi-Fi network
-SSID = 'BorgoPio138'
-PASSWORD = 'buongornio'
-#ssid1 = 'BorgoPio138'
-#password1 = 'buongornio
-
 def connect_wifi(ssid, password):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -18,7 +12,11 @@ def connect_wifi(ssid, password):
 
     # Attempt to connect to the Wi-Fi network
     print(f"Connecting to {ssid}...")
-    wlan.connect(ssid, password)
+    try:
+        wlan.connect(ssid, password)
+    except Exception as e:
+        print(f"Error connecting to {ssid}: {e}")
+        return
 
     # Wait for connection with a timeout
     start_time = time.time()
@@ -29,11 +27,13 @@ def connect_wifi(ssid, password):
         print("Connecting...")
         time.sleep(1)
 
-    # Print the IP address once connected
+    # Check if connected and print the IP address
     if wlan.isconnected():
-        print(f"Connected to {ssid} with IP address: {wlan.ifconfig()[0]}")
+        print(f"Successfully connected to {ssid} with IP address: {wlan.ifconfig()[0]}")
     else:
         print(f"Failed to connect to {ssid}")
 
-# Call the function to connect to Wi-Fi
+# Example usage
+SSID = 'BorgoPio138'
+PASSWORD = 'buongornio'
 connect_wifi(SSID, PASSWORD)
