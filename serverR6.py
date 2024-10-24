@@ -69,6 +69,7 @@ def send_status_message(cl, message):
 
 def connect_wifi(ssid1, password1, ssid2, password2):
     wlan = network.WLAN(network.STA_IF)
+    print(wlan)
     wlan.active(True)
     # Set static IP address
     #ip = '192.168.178.227'
@@ -76,23 +77,22 @@ def connect_wifi(ssid1, password1, ssid2, password2):
     #gateway = '192.168.1.1'
     #dns = '8.8.8.8'
     #wlan.ifconfig((ip, subnet, gateway, dns))
-    print('Dyn assigned IP address:', wlan.ifconfig()[0])
+    #print('Dyn assigned IP address:', wlan.ifconfig()[0])
 
     def try_connect(ssid, password):
-        print("inside try_connect")
         print(f"Trying to connect to network {ssid}...")
         if not wlan.isconnected():
             try:
-                print("before wlan")
                 if not wlan.isconnected():
                     print("Not connected to a network.")
                     wlan.connect(ssid, password)
                 else:
                     print("Already connected to a network.")
-                #wlan.connect(ssid, password)
-                print("after wlan")
+                    wlan.connect(ssid, password)
                 if wlan.isconnected():
                     print(f'Connected to network {ssid}')
+                    print('Dyn assigned IP address:', wlan.ifconfig()[0])
+
                     return True
                 start_time = time.time()
                 while not wlan.isconnected():
@@ -106,6 +106,8 @@ def connect_wifi(ssid1, password1, ssid2, password2):
                 return False
         else:
             print(f'Already connected to network {ssid}')
+            print('Dyn assigned IP address:', wlan.ifconfig()[0])
+
             return True
 
     # Try to connect to the first SSID
@@ -121,7 +123,7 @@ def connect_wifi(ssid1, password1, ssid2, password2):
             # Optionally, you can reset the device or handle the failure as needed
             print('Failed to connect to any network, resetting...')
             #reset()
-    #send_status_message(client,'Network conneted!')
+    #send_status_message(client,'Network connected!')
     #send_status_message(cl,'IP address' + wlan.ifconfig()[0])
 
 
