@@ -33,7 +33,7 @@ import uos
 import urequests  # Add this import
 
 ssid1 = 'BorgoPio138'
-password1 = 'buongornio'
+password1 = 'buongiorno'
 ssid2 = 'Aubrey iPhone'
 password2 = 'trawet07'
 # ssid2 = 'StewartNet'
