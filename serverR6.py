@@ -54,7 +54,8 @@ uart = None"""
 def send_status_message(cl, message):
     try:
         if cl:
-            print(f"Socket state: {cl}")
+            print(f"\nSocket state from send_status_message: {cl}")
+            print(f"Sending message: {message}")
             cl.sendall(f'Server Msg: {message}'.encode())
         else:
             print("Socket is not initialized.")
@@ -64,10 +65,8 @@ def send_status_message(cl, message):
             #response = urequests.post(url, json=payload)
             #response.close()
     except OSError as e:
-        #print(f"Error sending message: {e}")
+        #print(f"Error sending status message: {e}")
         print(f"Error sending status messageee: {e}")
-
-print("Releasing IP address")
 
 def release_wifi_ip():
     wlan = network.WLAN(network.STA_IF)
@@ -256,13 +255,13 @@ def start_server():
                         while True:
                             data = cl.recv(1024)
                             #send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
-                            send_status_message(cl, "test message 42")
+                            #send_status_message(cl, "test message 42")
                             if not data:
                                 #send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
                                 break
                             f.write(data)
-                    send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
-                    cl.close()
+                    #send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
+                    #cl.close()
                     print(f'File {file_name} received and saved to {file_path} on ESP32')
             except OSError as e:
                 if e.args[0] == 116:  # ETIMEDOUT error code
@@ -270,9 +269,11 @@ def start_server():
                 else:
                     print(f"start_server generic OSError - Error: {e}")
             finally:
-                cl.close()  # Ensure the client connection is closed. This is important! Otherwise, the server will hang als 
+                print("1st finally")
+                #cl.close()  # Ensure the client connection is closed. This is important! Otherwise, the server will hang als 
     finally:
-        s.close()
+        print("2nd finally")
+        #s.close()
 
 def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
     global uart
