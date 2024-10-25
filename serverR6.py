@@ -154,6 +154,7 @@ def start_server():
             time.sleep(.1)
             try:
                 cl, addr = s.accept()  # Accepting client connections here
+                #list_files(cl) #send file list to client at connect time
                 print('Client connected from', addr)
                 data = cl.recv(1024)
                 send_status_message(cl, "test message 42")
@@ -257,7 +258,7 @@ def start_server():
                                 #send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
                                 break
                             f.write(data)
-                    #send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
+                    send_status_message(cl, f'File {file_name} recWWWWWeived and saved to {file_path} on ESP32')
                     cl.close()
                     print(f'File {file_name} received and saved to {file_path} on ESP32')
             except OSError as e:
