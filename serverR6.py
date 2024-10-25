@@ -50,6 +50,7 @@ uart = UART(1, baudrate=9600, bits=7, parity=1, stop=2, tx=16, rx=17, cts=18, rt
 #ssid='stewartnet'
 password='trawet07'
 uart = None"""
+
 def send_status_message(cl, message):
     try:
         if cl:
@@ -86,12 +87,12 @@ def connect_wifi(ssid1, password1, ssid2, password2):
     wlan.active(True)
     print(wlan)
     # Set static IP address
-    ip = '192.168.178.227'
-    subnet = '255.255.255.0'
-    gateway = '192.168.1.1'
-    dns = '8.8.8.8'
-    wlan.ifconfig((ip, subnet, gateway, dns))
-    #print('Dyn assigned IP address:', wlan.ifconfig()[0])
+    #ip = '192.168.178.227'
+    #subnet = '255.255.255.0'
+    #gateway = '192.168.1.1'
+    #dns = '8.8.8.8'
+    #wlan.ifconfig((ip, subnet, gateway, dns))
+    print('Dyn assigned server IP address is:', wlan.ifconfig()[0])
 
     def try_connect(ssid, password):
         print(f"Trying to connect to network {ssid}...")
@@ -137,7 +138,7 @@ def connect_wifi(ssid1, password1, ssid2, password2):
             # Optionally, you can reset the device or handle the failure as needed
             print('Failed to connect to any network, resetting...')
             #reset()
-    #send_status_message(client,'Network connected!')
+    #send_status_message(cl,'Network connected!')
     #send_status_message(cl,'IP address' + wlan.ifconfig()[0])
 
 
@@ -154,14 +155,16 @@ def start_server():
             time.sleep(.1)
             try:
                 cl, addr = s.accept()  # Accepting client connections here
-                #list_files(cl) #send file list to client at connect time
+                list_files(cl) #send file list to client at connect time
                 print('Client connected from', addr)
                 data = cl.recv(1024)
                 send_status_message(cl, "test message 42")
+
                 if data == b'CLEAR_FILES': #send status message works
                     print("clearing files")
                     clear_files()
-                    send_status_message(cl, 'All User files cleared on ESP32')
+                    message = 'All User files cleared on ESP32'
+                    send_status_message(cl, message)
                 
                 elif data == b'LIST_FILES':   #send status message works
                     print("lists files")
@@ -469,7 +472,7 @@ def clear_files():
     except OSError as e:
         print(f"clear_files - Error: {e}")
 
-def list_files(client):
+def list_files(cl):
     files = []
     for item in uos.listdir():
         if uos.stat(item)[0] & 0x4000:  # Check if it's a directory
@@ -477,19 +480,19 @@ def list_files(client):
                 files.append(f"{item}/{file}")
         else:
             files.append(item)
-    client.send('\n'.join(files).encode())
-    #client.close()
+    cl.send('\n'.join(files).encode())
+    #cl.close()
     print('File list sent')
 
-def send_file_to_client(client, file_name):
+def send_file_to_client(cl, file_name):
     try:
         with open(file_name, 'rb') as f:
             while True:
                 chunk = f.read(1024)
                 if not chunk:
                     break
-                client.send(chunk)
-        #client.close()
+                cl.send(chunk)
+        #cl.close()
         print(f'File {file_name} sent to client')
     except OSError as e:
         print(f"Error sending file {file_name}: {e}")

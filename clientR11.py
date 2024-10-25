@@ -73,7 +73,7 @@ def run_receiver():
         if save_path:
             receive_file(file_name, save_path)
     else:
-        update_status("No file selected")
+        update_status("\nNo file selected")
 
 def send_reboot_command():
     try:
@@ -81,7 +81,7 @@ def send_reboot_command():
             s = socket.socket()
             s.connect((HOST, PORT))
             s.sendall(b'REBOOT')
-            update_status('Reboot command sent')
+            update_status('\nClient Msg: Reboot command sent')
             status = s.recv(1024).decode()  # Wait for status message
             update_status(status) 
             s.close()
@@ -95,7 +95,7 @@ def request_serial_data():
             s.connect((HOST, PORT))
             s.sendall(b'RECEIVE_SERIAL')
             s.close()
-            update_status('Request to receive serial data sent')
+            update_status('\nClient Msg: Request to receive serial data sent')
             update_file_list()  # Refresh the file list
     except socket.error as e:
         update_status(f"request_serial_data - Socket error: {e}")
@@ -113,10 +113,9 @@ def receive_file(file_name, save_path): # This function causes a selected file o
                     if not data:
                         break
                     f.write(data)
-            
             status = s.recv(1024).decode()  # Wait for status message
             time.sleep(.1)
-            update_status(f'File {file_name} received and saved to {save_path}')
+            update_status(f'\nClient Msg: File {file_name} received and saved to {save_path}')
             update_status(status) 
             s.close()
     except socket.error as e:
@@ -126,24 +125,24 @@ def send_file(file_path, host, port):
     file_name = os.path.basename(file_path)
     with open(file_path, 'rb') as f:
         data = f.read()
-    
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s = socket.socket()
-            s.connect((host, port))
-            s.sendall(file_name.encode() + b'\n' + data)
-            update_status('File sent to ESP32: ' + file_name)
-            #status = s.recv(1024).decode()  # Wait for status message
-            #update_status(status)    
-            s.close()
-            update_file_list()  # Refresh the file list after sending a file
-    except socket.error as e:
-        update_status(f"send_file - Socket error: {e}")
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s = socket.socket()
+                s.connect((host, port))
+                s.sendall(file_name.encode() + b'\n' + data)
+                update_status('\nClient Msg: File sent to ESP32: ' + file_name)
+                status = s.recv(1024).decode()  # Wait for status message
+                update_status(status)    
+                s.close()
+                update_file_list()  # Refresh the file list after sending a file
+        except socket.error as e:
+            update_status(f"send_file - Socket error: {e}")
 
 def select_and_send_file():
     file_path = filedialog.askopenfilename(title="Select a file to send")
     if file_path:
         send_file(file_path, HOST, PORT)
+        update_status(f'\nClient Msg: File {file_path} sent to ESP32')
     else:
         update_status("No file selected")
 
@@ -153,7 +152,7 @@ def clear_files_on_esp32():
             s = socket.socket()
             s.connect((HOST, int(PORT)))  # Ensure PORT is an integer
             s.sendall(b'CLEAR_FILES')
-            update_status("Command to files cleared on ESP32 sent")
+            update_status("\nClient Msg: Command to files cleared on ESP32 sent")
             status = s.recv(1024).decode()  # Wait for status message
             s.close()
             update_status(status)
@@ -170,7 +169,7 @@ def list_files_on_esp32():
             s.sendall(b'LIST_FILES')
             data = s.recv(4096).decode()
             s.close()
-            update_status('Files on ESP32:')
+            update_status('\nClient Msg: Files on ESP32')
             update_status(data)
         return data.split('\n')
     except socket.error as e:
