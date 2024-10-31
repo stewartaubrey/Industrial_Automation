@@ -284,7 +284,7 @@ def uart_setup(port, baudrate, parity, databits, stopbits, flowcontrol):
 
     return uart
 
-def send_to_serial(file_name, timeout=10):  # Timeout in seconds
+def send_to_serial(file_name, timeout=240):  # Timeout in seconds
     print("Executing the send_to_serial function")
     global uart
     if uart is None:
@@ -296,14 +296,14 @@ def send_to_serial(file_name, timeout=10):  # Timeout in seconds
     print("Start time:", start_time)
 
     try:
-        with open(file_name, 'rb') as file:
+        with open(file_name, 'r') as file: #Removed the "b" to not use binary mode
             while True:
                 # Check if timeout has been exceeded
                 elapsed_time = time.time() - start_time
-                print(time.time(), start_time)
-                print("Elapsed time:", elapsed_time)
+                #print(time.time(), start_time)
+                #print("Elapsed time:", elapsed_time)
                 if elapsed_time > timeout:
-                    #time.sleep(.01)
+                    time.sleep(.01) # Small delay to prevent busy waiting
                     print("send_to_serial - Timeout exceeded")
                     break
 
@@ -312,17 +312,17 @@ def send_to_serial(file_name, timeout=10):  # Timeout in seconds
                 print(chunk)
                 #print('\n')
                 if not chunk:
-                    print("past timeout check")
+                    print("Sending complete")
                     break
 
                 # Send the chunk to the serial port
                 uart.write(chunk)
-                print("Sent chunk of size:", len(chunk))
+                #print("Sent chunk of size:", len(chunk))
     except Exception as e:
         print("send_to_serial - Error:", e)
 
 
-def send_to_serial_xonxoff(file_name, timeout=10):  # Timeout in seconds
+def send_to_serial_xonxoff(file_name, timeout=240):  # Timeout in seconds
     print("Executing the send_to_serial_xonxoff function")
     global uart  # may need to adjust this for software flow control
     if uart is None:
@@ -337,7 +337,7 @@ def send_to_serial_xonxoff(file_name, timeout=10):  # Timeout in seconds
 
     try:
         print(time.time()-start_time)
-        with open(file_name, 'rb') as f:
+        with open(file_name, 'r') as f: #removed the "b" to not use binary mode
             # Prepend the XON character
             uart.write(bytes([XON])) # Send the XON character to the CNC machine as hex
         while True:
