@@ -152,9 +152,9 @@ def start_server():
                     send_status_message(cl, f'File {file_name} sent to CNC')
                 
                 elif data.startswith(b'DELETE_FILE'):
-                    print("Deleted file: " + file_name)
                     file_name = data[len('DELETE_FILE '):].decode()
                     delete_file(file_name)
+                    print("Deleted file: " + file_name)
                     send_status_message(cl, f'File {file_name} deleted from ESP32')
 
                 elif data.startswith(b'RECEIVE_FILE'):
