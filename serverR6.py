@@ -1,4 +1,7 @@
-""" This program runs on a ESP32 connected
+""" 
+pinout def: tx=16, rx=17, cts=18, rts=19
+
+This program runs on a ESP32 connected
     via serial link to the CNC machine
     
     Next upgrade is setup messaging back to client:
