@@ -1,4 +1,4 @@
-import os
+# main.py
 
 # Directly execute the currentversion.py script
-os.system('python CurrentVersion.py')
+import CurrentVersion
